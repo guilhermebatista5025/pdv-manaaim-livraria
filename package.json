@@ -1,0 +1,28 @@
+{
+  "name": "pdv-manaaim-livraria",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PDV local para a Livraria Manaaim",
+  "main": "backend/src/server.js",
+  "scripts": {
+    "dev": "node --watch backend/src/server.js",
+    "start": "node backend/src/server.js",
+    "check": "node --check backend/src/server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.3.1",
+    "bcryptjs": "^3.0.2",
+    "better-sqlite3": "11.10.0",
+    "better-sqlite3-session-store": "^0.1.0",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "express-session": "^1.18.2",
+    "helmet": "^8.1.0",
+    "multer": "^2.2.0",
+    "pdfkit": "^0.19.1"
+  }
+}

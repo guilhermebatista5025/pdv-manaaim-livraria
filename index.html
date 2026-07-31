@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#17233c">
+    <meta name="description" content="Sistema de vendas e estoque da Livraria Manaaim">
+    <title>PDV-PRO LIVRARIA</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
+  </head>
+  <body>
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <main id="loginScreen" class="login-screen">
+      <section class="login-brand">
+        <div class="brand-mark brand-mark--large" aria-hidden="true">
+          <i class="fa-solid fa-book-open"></i>
+        </div>
+        <div>
+          <p class="eyebrow">Livraria Manaaim</p>
+          <h1>Venda simples.<br>Gestão inteligente.</h1>
+          <p class="login-brand__description">
+            Controle seu caixa, estoque e resultados em um só lugar.
+          </p>
+        </div>
+        <div class="brand-metric">
+          <span class="brand-metric__icon"><i class="fa-solid fa-shield-halved"></i></span>
+          <div>
+            <strong>Seus dados protegidos</strong>
+            <small>Armazenamento local e acesso seguro</small>
+          </div>
+        </div>
+      </section>
+
+      <section class="login-panel">
+        <div class="login-card">
+          <div class="mobile-logo">
+            <div class="brand-mark" aria-hidden="true">
+              <i class="fa-solid fa-book-open"></i>
+            </div>
+            <div>
+              <strong>PDV-PRO</strong>
+              <span>LIVRARIA</span>
+            </div>
+          </div>
+          <div id="loginView" class="auth-view">
+            <p class="eyebrow">Bem-vindo de volta</p>
+            <h2>Acesse sua conta</h2>
+            <p class="login-card__subtitle">Entre com seus dados para continuar.</p>
+            <form id="loginForm" class="login-form">
+            <label for="email">E-mail</label>
+            <div class="input-wrap">
+              <span class="input-icon" aria-hidden="true"><i class="fa-solid fa-envelope"></i></span>
+              <input id="email" name="email" type="email" autocomplete="username" placeholder="seu@email.com" required>
+            </div>
+
+            <label for="password">Senha</label>
+            <div class="input-wrap">
+              <span class="input-icon" aria-hidden="true"><i class="fa-solid fa-lock"></i></span>
+              <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Digite sua senha" required>
+              <button id="togglePassword" class="icon-button" type="button" aria-label="Mostrar senha"><i id="togglePasswordIcon" class="fa-solid fa-eye"></i></button>
+            </div>
+
+            <button id="loginButton" class="button button--primary button--full" type="submit">
+              <span>Entrar no sistema</span>
+              <span aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
+            </button>
+            </form>
+            <div class="auth-links"><button type="button" data-auth-view="forgot">Esqueceu a senha?</button><button type="button" data-auth-view="register">Criar uma conta</button></div>
+          </div>
+
+          <div id="registerView" class="auth-view" hidden>
+            <button class="auth-back" type="button" data-auth-view="login"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
+            <p class="eyebrow">Novo acesso</p>
+            <h2>Crie sua conta</h2>
+            <p class="login-card__subtitle">Cadastre-se como operador de caixa.</p>
+            <form id="registerForm" class="login-form">
+              <label for="registerName">Nome completo</label>
+              <div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-user"></i></span><input id="registerName" type="text" autocomplete="name" minlength="3" maxlength="100" placeholder="Seu nome completo" required></div>
+              <label for="registerEmail">E-mail</label>
+              <div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-envelope"></i></span><input id="registerEmail" type="email" autocomplete="email" placeholder="seu@email.com" required></div>
+              <label for="registerPassword">Senha</label>
+              <div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-lock"></i></span><input id="registerPassword" type="password" autocomplete="new-password" minlength="8" placeholder="Mínimo de 8 caracteres" required></div>
+              <label for="registerPasswordConfirm">Confirme a senha</label>
+              <div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-shield-halved"></i></span><input id="registerPasswordConfirm" type="password" autocomplete="new-password" minlength="8" placeholder="Digite a senha novamente" required></div>
+              <button class="button button--primary button--full" type="submit"><span>Criar conta</span><i class="fa-solid fa-user-plus"></i></button>
+            </form>
+          </div>
+
+          <div id="forgotView" class="auth-view" hidden>
+            <button class="auth-back" type="button" data-auth-view="login"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
+            <p class="eyebrow">Recuperação de acesso</p>
+            <h2>Redefina sua senha</h2>
+            <p class="login-card__subtitle">Informe o e-mail cadastrado e escolha uma nova senha.</p>
+            <form id="forgotForm" class="login-form">
+              <label for="forgotEmail">E-mail cadastrado</label>
+              <div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-envelope"></i></span><input id="forgotEmail" type="email" autocomplete="email" placeholder="seu@email.com" required></div>
+              <label for="forgotPassword">Nova senha</label>
+              <div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-lock"></i></span><input id="forgotPassword" type="password" autocomplete="new-password" minlength="8" placeholder="Mínimo de 8 caracteres" required></div>
+              <label for="forgotPasswordConfirm">Confirme a nova senha</label>
+              <div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-shield-halved"></i></span><input id="forgotPasswordConfirm" type="password" autocomplete="new-password" minlength="8" placeholder="Digite a senha novamente" required></div>
+              <button class="button button--primary button--full" type="submit"><span>Atualizar senha</span><i class="fa-solid fa-key"></i></button>
+            </form>
+          </div>
+        </div>
+        <p class="copyright">© 2026 PDV-PRO LIVRARIA</p>
+      </section>
+    </main>
+
+    <div id="appScreen" class="app-shell" hidden>
+      <aside id="sidebar" class="sidebar">
+        <div class="sidebar__brand">
+          <div class="brand-mark" aria-hidden="true">
+            <i class="fa-solid fa-book-open"></i>
+          </div>
+          <div>
+            <strong>PDV-PRO</strong>
+            <span>LIVRARIA</span>
+          </div>
+        </div>
+
+        <nav class="main-nav" aria-label="Navegação principal">
+          <p class="nav-label">Principal</p>
+          <button class="nav-item is-active" data-view="pos"><span><i class="fa-solid fa-cart-shopping"></i></span> Nova venda</button>
+          <button class="nav-item" data-view="dashboard"><span><i class="fa-solid fa-house"></i></span> Visão geral</button>
+          <button class="nav-item nav-item--restricted" data-view="cash"><span><i class="fa-solid fa-cash-register"></i></span> Controle de caixa</button>
+          <p class="nav-label">Gerenciamento</p>
+          <button class="nav-item" data-view="products"><span><i class="fa-solid fa-book"></i></span> Produtos</button>
+          <button class="nav-item" data-view="stock"><span><i class="fa-solid fa-boxes-stacked"></i></span> Estoque</button>
+          <button class="nav-item" data-view="sales"><span><i class="fa-solid fa-receipt"></i></span> Vendas</button>
+          <button class="nav-item nav-item--restricted" data-view="cancellations"><span><i class="fa-solid fa-rotate-left"></i></span> Cancelamentos</button>
+          <button class="nav-item nav-item--restricted" data-view="reports"><span><i class="fa-solid fa-chart-column"></i></span> Relatórios</button>
+        </nav>
+
+        <div class="sidebar__footer">
+          <div class="user-chip">
+            <span id="userAvatar" class="avatar">A</span>
+            <div>
+              <strong id="sidebarUserName">Administrador</strong>
+              <small id="sidebarUserRole">Administrador</small>
+            </div>
+          </div>
+          <button id="logoutButton" class="logout-button" type="button" title="Sair"><i class="fa-solid fa-right-from-bracket"></i></button>
+        </div>
+      </aside>
+
+      <div class="app-content">
+        <header class="topbar">
+          <button id="menuButton" class="menu-button" type="button" aria-label="Abrir menu"><i class="fa-solid fa-bars"></i></button>
+          <div>
+            <p id="pageEyebrow" class="eyebrow">Resumo do negócio</p>
+            <h1 id="pageTitle">Visão geral</h1>
+          </div>
+          <div class="topbar__actions">
+            <button id="cashStatusButton" class="cash-status cash-status--closed" type="button"><i class="fa-solid fa-lock"></i><span>Caixa fechado</span></button>
+            <div class="today">
+              <small>Hoje</small>
+              <strong id="todayDate">—</strong>
+            </div>
+            <button class="notification-button" type="button" aria-label="Notificações"><i class="fa-solid fa-bell"></i><span></span></button>
+          </div>
+        </header>
+
+        <main class="workspace">
+          <section id="view-dashboard" class="view is-visible">
+            <div class="welcome-row">
+              <div>
+                <h2>Olá, <span id="welcomeName">Administrador</span>!</h2>
+                <p>Acompanhe o desempenho da livraria hoje.</p>
+              </div>
+            <button class="button button--primary" data-go-view="pos"><span><i class="fa-solid fa-plus"></i></span> Nova venda</button>
+            </div>
+
+            <div class="metric-grid">
+              <article class="metric-card">
+                <div class="metric-card__top"><span class="metric-icon metric-icon--green"><i class="fa-solid fa-dollar-sign"></i></span><small>Hoje</small></div>
+                <p>Faturamento</p>
+                <strong id="metricRevenue">R$ 0,00</strong>
+                <span class="metric-foot">Total vendido no período</span>
+              </article>
+              <article class="metric-card">
+                <div class="metric-card__top"><span class="metric-icon metric-icon--blue"><i class="fa-solid fa-cart-shopping"></i></span><small>Hoje</small></div>
+                <p>Vendas realizadas</p>
+                <strong id="metricSales">0</strong>
+                <span class="metric-foot">Atendimentos concluídos</span>
+              </article>
+              <article class="metric-card">
+                <div class="metric-card__top"><span class="metric-icon metric-icon--amber"><i class="fa-solid fa-box"></i></span><small>Hoje</small></div>
+                <p>Itens vendidos</p>
+                <strong id="metricItems">0</strong>
+                <span class="metric-foot">Produtos que saíram</span>
+              </article>
+              <article class="metric-card">
+                <div class="metric-card__top"><span class="metric-icon metric-icon--purple"><i class="fa-solid fa-chart-line"></i></span><small>Estimativa</small></div>
+                <p>Lucro bruto</p>
+                <strong id="metricProfit">R$ 0,00</strong>
+                <span class="metric-foot">Antes das despesas</span>
+              </article>
+            </div>
+
+            <div class="dashboard-grid">
+              <article class="panel">
+                <div class="panel__header">
+                  <div><h3>Produtos mais vendidos</h3><p>Destaques do período</p></div>
+                  <button class="text-button" data-go-view="reports">Ver relatório <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+                <div id="topProducts" class="ranking-list">
+                  <div class="empty-state"><span><i class="fa-solid fa-chart-simple"></i></span><p>Nenhuma venda registrada hoje.</p></div>
+                </div>
+              </article>
+
+              <article class="panel">
+                <div class="panel__header">
+                  <div><h3>Atenção ao estoque</h3><p>Produtos abaixo do mínimo</p></div>
+                  <span id="lowStockCount" class="count-badge">0</span>
+                </div>
+                <div id="lowStockList" class="stock-list">
+                  <div class="empty-state empty-state--success"><span><i class="fa-solid fa-check"></i></span><p>Estoque em dia!</p></div>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section id="view-pos" class="view">
+            <div class="section-heading"><div><h2>Nova venda</h2><p>Selecione os produtos e finalize o atendimento.</p></div><span id="posCashBadge" class="live-badge"><i class="fa-solid fa-circle"></i> Caixa online</span></div>
+            <div class="pos-layout">
+              <div class="pos-catalog">
+                <div class="panel">
+                  <div class="pos-filters">
+                    <div class="pos-search">
+                      <i class="fa-solid fa-magnifying-glass"></i>
+                      <input id="posSearch" type="search" placeholder="Buscar título, categoria, SKU ou código..." autocomplete="off">
+                    </div>
+                    <select id="posCategoryFilter" aria-label="Filtrar por categoria"><option value="">Todas as categorias</option></select>
+                    <select id="posStockFilter" aria-label="Filtrar por estoque"><option value="available">Com estoque</option><option value="all">Todos</option><option value="low">Estoque baixo</option><option value="out">Esgotados</option></select>
+                  </div>
+                </div>
+                <div class="panel pos-products-panel">
+                  <div class="panel__header">
+                    <div><h3>Produtos disponíveis</h3><p>Clique para adicionar ao carrinho</p></div>
+                    <span id="posProductCount" class="count-badge">0</span>
+                  </div>
+                  <div id="posProducts" class="product-cards"></div>
+                </div>
+              </div>
+              <aside class="pos-checkout">
+                <article class="panel cart-card">
+                  <div class="panel__header">
+                    <div><h3><i class="fa-solid fa-cart-shopping"></i> Carrinho</h3><p id="cartItemsCount">0 itens</p></div>
+                    <button id="clearCartButton" class="danger-icon-button" type="button" title="Limpar carrinho"><i class="fa-solid fa-trash"></i></button>
+                  </div>
+                  <div id="cartList" class="cart-list"></div>
+                  <div class="cart-card__footer">
+                    <div class="cart-summary"><span>Total do carrinho</span><strong id="cartPreviewTotal">R$ 0,00</strong></div>
+                  <button id="finishSaleButton" class="button button--primary button--full" type="button"><span><i class="fa-solid fa-circle-check"></i> Finalizar venda</span><span><i class="fa-solid fa-arrow-right"></i></span></button>
+                  </div>
+                </article>
+              </aside>
+            </div>
+          </section>
+
+          <section id="view-cash" class="view">
+            <div class="section-heading">
+              <div><h2>Controle de caixa</h2><p>Abra, acompanhe e encerre os períodos de venda.</p></div>
+              <div class="cash-heading-actions">
+                <button id="openCashButton" class="button button--primary"><i class="fa-solid fa-lock-open"></i> Abrir caixa</button>
+                <button id="closeCashButton" class="button button--danger" hidden><i class="fa-solid fa-lock"></i> Fechar caixa</button>
+              </div>
+            </div>
+            <div id="cashCurrentCard" class="cash-current-card cash-current-card--closed">
+              <span class="cash-current-card__icon"><i class="fa-solid fa-cash-register"></i></span>
+              <div><p>Status atual</p><h3 id="cashCurrentTitle">Caixa fechado</h3><small id="cashCurrentDetails">Abra um novo caixa para começar a vender.</small></div>
+            </div>
+            <div class="panel table-panel section-panel">
+              <div class="panel__header"><div><h3>Histórico de caixas</h3><p>Relatórios consolidados de cada período</p></div><button id="refreshCashButton" class="text-button"><i class="fa-solid fa-rotate"></i> Atualizar</button></div>
+              <div class="table-wrap"><table><thead><tr><th>Caixa</th><th>Abertura</th><th>Fechamento</th><th>Vendas</th><th>Faturamento</th><th>Status</th><th>Relatório</th></tr></thead><tbody id="cashHistoryTable"></tbody></table></div>
+            </div>
+          </section>
+
+          <section id="view-products" class="view">
+            <div class="section-heading">
+              <div><h2>Produtos</h2><p>Catálogo de livros e demais itens.</p></div>
+              <button id="newProductButton" class="button button--primary" type="button"><i class="fa-solid fa-plus"></i> Cadastrar produto</button>
+            </div>
+            <div class="panel table-panel">
+              <div class="toolbar"><input id="productSearch" type="search" placeholder="Buscar produto, SKU ou código de barras..."></div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Produto</th><th>Categoria</th><th>Preço</th><th>Estoque</th><th>Status</th><th></th></tr></thead>
+                  <tbody id="productsTable"><tr><td colspan="6" class="table-empty">Nenhum produto cadastrado.</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section id="view-stock" class="view">
+            <div class="section-heading"><div><h2>Estoque</h2><p>Acompanhe entradas, saídas e níveis mínimos.</p></div><button id="newStockButton" class="button button--primary"><i class="fa-solid fa-arrow-right-arrow-left"></i> Movimentar estoque</button></div>
+            <div class="metric-grid stock-metrics">
+              <article class="metric-card"><div class="metric-card__top"><span class="metric-icon metric-icon--blue"><i class="fa-solid fa-book"></i></span></div><p>Produtos ativos</p><strong id="stockProductsCount">0</strong><span class="metric-foot">Itens no catálogo</span></article>
+              <article class="metric-card"><div class="metric-card__top"><span class="metric-icon metric-icon--green"><i class="fa-solid fa-boxes-stacked"></i></span></div><p>Unidades disponíveis</p><strong id="stockUnitsCount">0</strong><span class="metric-foot">Soma do estoque atual</span></article>
+              <article class="metric-card"><div class="metric-card__top"><span class="metric-icon metric-icon--amber"><i class="fa-solid fa-sack-dollar"></i></span></div><p>Valor em custo</p><strong id="stockCostValue">R$ 0,00</strong><span class="metric-foot">Capital em mercadoria</span></article>
+              <article class="metric-card"><div class="metric-card__top"><span class="metric-icon metric-icon--purple"><i class="fa-solid fa-triangle-exclamation"></i></span></div><p>Estoque baixo</p><strong id="stockLowCount">0</strong><span class="metric-foot">Precisam de atenção</span></article>
+            </div>
+            <div class="panel table-panel section-panel">
+              <div class="panel__header"><div><h3>Últimas movimentações</h3><p>Histórico de entradas e saídas</p></div></div>
+              <div class="table-wrap"><table><thead><tr><th>Data</th><th>Produto</th><th>Tipo</th><th>Quantidade</th><th>Motivo</th><th>Usuário</th></tr></thead><tbody id="stockTable"></tbody></table></div>
+            </div>
+          </section>
+
+          <section id="view-sales" class="view">
+            <div class="section-heading"><div><h2>Vendas</h2><p>Histórico dos atendimentos realizados.</p></div></div>
+            <div class="panel table-panel">
+              <div class="toolbar"><div class="toolbar-title"><i class="fa-solid fa-receipt"></i><span>Últimas vendas</span></div><button id="refreshSalesButton" class="text-button"><i class="fa-solid fa-rotate"></i> Atualizar</button></div>
+              <div class="table-wrap"><table><thead><tr><th>Venda</th><th>Data</th><th>Operador</th><th>Pagamento</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody id="salesTable"></tbody></table></div>
+            </div>
+          </section>
+
+          <section id="view-cancellations" class="view">
+            <div class="section-heading">
+              <div><h2>Cancelamentos</h2><p>Estorne vendas lançadas incorretamente e devolva os itens ao estoque.</p></div>
+              <button id="refreshCancellationsButton" class="button button--secondary"><i class="fa-solid fa-rotate"></i> Atualizar</button>
+            </div>
+            <div class="notice-card">
+              <i class="fa-solid fa-circle-info"></i>
+              <div><strong>Como funciona o estorno?</strong><p>A venda será cancelada, os produtos voltarão ao estoque e o valor deixará de compor o faturamento e os relatórios.</p></div>
+            </div>
+            <div class="panel table-panel section-panel">
+              <div class="toolbar">
+                <div class="toolbar-title"><i class="fa-solid fa-clock-rotate-left"></i><span>Todas as vendas</span></div>
+                <input id="cancellationSearch" type="search" placeholder="Buscar por número ou operador...">
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Venda</th><th>Data</th><th>Operador</th><th>Pagamento</th><th>Total</th><th>Status</th><th>Ação</th></tr></thead>
+                  <tbody id="cancellationsTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section id="view-reports" class="view">
+            <div class="section-heading"><div><h2>Relatórios</h2><p>Indicadores para acompanhar o negócio.</p></div></div>
+            <div class="report-filters panel">
+              <div><label for="reportPeriod">Período</label><select id="reportPeriod"><option value="today">Hoje</option><option value="week">Últimos 7 dias</option><option value="month">Este mês</option></select></div>
+              <button id="printReportButton" class="button button--secondary"><i class="fa-solid fa-print"></i> Imprimir</button>
+            </div>
+            <div class="metric-grid report-metrics">
+              <article class="metric-card"><div class="metric-card__top"><span class="metric-icon metric-icon--green"><i class="fa-solid fa-dollar-sign"></i></span></div><p>Faturamento</p><strong id="reportRevenue">R$ 0,00</strong></article>
+              <article class="metric-card"><div class="metric-card__top"><span class="metric-icon metric-icon--blue"><i class="fa-solid fa-receipt"></i></span></div><p>Vendas</p><strong id="reportSales">0</strong></article>
+              <article class="metric-card"><div class="metric-card__top"><span class="metric-icon metric-icon--amber"><i class="fa-solid fa-box"></i></span></div><p>Itens vendidos</p><strong id="reportItems">0</strong></article>
+              <article class="metric-card"><div class="metric-card__top"><span class="metric-icon metric-icon--purple"><i class="fa-solid fa-chart-line"></i></span></div><p>Lucro bruto</p><strong id="reportProfit">R$ 0,00</strong></article>
+            </div>
+            <div class="dashboard-grid section-panel">
+              <article class="panel"><div class="panel__header"><div><h3>Ranking de produtos</h3><p>Mais vendidos no período</p></div></div><div id="reportTopProducts" class="ranking-list"></div></article>
+              <article class="panel"><div class="panel__header"><div><h3>Estoque crítico</h3><p>Produtos no mínimo ou abaixo</p></div></div><div id="reportLowStock" class="stock-list"></div></article>
+            </div>
+          </section>
+        </main>
+      </div>
+      <button id="sidebarBackdrop" class="sidebar-backdrop" type="button" aria-label="Fechar menu"></button>
+    </div>
+
+    <dialog id="checkoutDialog" class="modal checkout-modal">
+      <form id="checkoutForm" class="modal__content">
+        <div class="modal__header"><div><p id="checkoutEyebrow" class="eyebrow">Conclusão do atendimento</p><h2 id="checkoutTitle">Finalizar venda</h2><p id="checkoutSubtitle" class="checkout-subtitle">Revise os dados antes de confirmar.</p></div><button class="modal-close" type="button" data-close-dialog="checkoutDialog" aria-label="Fechar modal"><i class="fa-solid fa-xmark"></i></button></div>
+        <section id="saleItemsDetails" class="checkout-section sale-items-details" hidden>
+          <h3><span><i class="fa-solid fa-bag-shopping"></i></span> Itens da venda</h3>
+          <div id="saleItemsDetailsList"></div>
+        </section>
+        <div class="checkout-grid">
+          <section class="checkout-section">
+            <h3><span>1</span> Dados da venda</h3>
+            <label class="field"><span>Nome do vendedor *</span><input id="sellerName" required maxlength="100" placeholder="Quem está realizando a venda?"></label>
+            <label class="field"><span>Observações</span><textarea id="saleNotes" rows="4" maxlength="500" placeholder="Ex.: cliente solicitou embalagem para presente (opcional)"></textarea></label>
+          </section>
+          <section class="checkout-section">
+            <h3><span>2</span> Desconto</h3>
+            <div class="segmented-control" role="group" aria-label="Tipo de desconto">
+              <button class="is-active" type="button" data-discount-type="percent">Porcentagem (%)</button>
+              <button type="button" data-discount-type="fixed">Valor (R$)</button>
+            </div>
+            <label class="field"><span id="discountValueLabel">Desconto em porcentagem</span><div class="money-input"><span id="discountPrefix">%</span><input id="saleDiscount" type="number" min="0" max="100" step="0.01" value="0"></div></label>
+          </section>
+          <section class="checkout-section checkout-section--wide">
+            <h3><span>3</span> Forma de pagamento</h3>
+            <div class="payment-options">
+              <label><input type="radio" name="paymentMethod" value="pix" checked><span><i class="fa-brands fa-pix"></i><strong>PIX</strong><small>Pagamento instantâneo</small></span></label>
+              <label><input type="radio" name="paymentMethod" value="cash"><span><i class="fa-solid fa-money-bill-wave"></i><strong>Dinheiro</strong><small>Calcular troco</small></span></label>
+              <label><input type="radio" name="paymentMethod" value="credit_card"><span><i class="fa-solid fa-credit-card"></i><strong>Cartão</strong><small>Débito ou crédito</small></span></label>
+            </div>
+            <div id="cashFields" class="cash-fields" hidden>
+              <label class="field"><span>Valor recebido</span><div class="money-input"><span>R$</span><input id="amountReceived" type="number" min="0" step="0.01" placeholder="0,00"></div></label>
+              <div class="change-box"><span>Troco</span><strong id="changeAmount">R$ 0,00</strong></div>
+            </div>
+            <div id="cardFields" class="card-fields" hidden>
+              <label class="field"><span>Bandeira do cartão *</span>
+                <select id="cardBrand">
+                  <option value="">Selecione a bandeira</option>
+                  <option value="visa">Visa</option>
+                  <option value="mastercard">Mastercard</option>
+                  <option value="elo">Elo</option>
+                  <option value="amex">American Express</option>
+                  <option value="hipercard">Hipercard</option>
+                  <option value="diners">Diners Club</option>
+                  <option value="other">Outra</option>
+                </select>
+              </label>
+              <label class="field"><span>Tipo do cartão *</span>
+                <select id="cardType">
+                  <option value="">Selecione o tipo</option>
+                  <option value="credit_card">Crédito</option>
+                  <option value="debit_card">Débito</option>
+                </select>
+              </label>
+            </div>
+          </section>
+        </div>
+        <div class="checkout-totals">
+          <div><span>Subtotal</span><strong id="cartSubtotal">R$ 0,00</strong></div>
+          <div><span>Desconto</span><strong id="checkoutDiscount">- R$ 0,00</strong></div>
+          <div class="checkout-totals__grand"><span>Total a pagar</span><strong id="cartTotal">R$ 0,00</strong></div>
+        </div>
+        <div class="modal__actions checkout-actions"><button id="checkoutCancelButton" class="button button--secondary" type="button" data-close-dialog="checkoutDialog">Cancelar e fechar</button><button id="checkoutSubmitButton" class="button button--primary" type="submit"><i class="fa-solid fa-check"></i> Finalizar venda</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="productDialog" class="modal">
+      <form id="productForm" class="modal__content">
+        <div class="modal__header"><div><p class="eyebrow">Catálogo</p><h2 id="productDialogTitle">Novo produto</h2></div><button class="modal-close" type="button" data-close-dialog="productDialog"><i class="fa-solid fa-xmark"></i></button></div>
+        <input id="productId" type="hidden">
+        <div class="form-grid">
+          <label class="image-upload-field field--wide" for="productImage">
+            <span id="productImagePreview" class="image-preview"><i class="fa-solid fa-image"></i></span>
+            <span class="image-upload-copy"><strong>Imagem do produto</strong><small>JPG, PNG ou WebP de até 5 MB</small><b><i class="fa-solid fa-arrow-up-from-bracket"></i> Escolher imagem</b></span>
+            <input id="productImage" type="file" accept="image/jpeg,image/png,image/webp">
+          </label>
+          <label class="field field--wide"><span>Nome do produto *</span><input id="productName" required placeholder="Ex.: Bíblia de Estudo"></label>
+          <label class="field"><span>SKU</span><input id="productSku" placeholder="LIV-001"></label>
+          <label class="field"><span>Código de barras</span><input id="productBarcode" placeholder="789..."></label>
+          <label class="field"><span>Categoria</span><input id="productCategory" placeholder="Bíblias, Livros, Presentes..."></label>
+          <label class="field"><span>Estoque mínimo</span><input id="productMinimumStock" type="number" min="0" value="0"></label>
+          <label class="field"><span>Preço de custo (R$)</span><input id="productCost" type="number" min="0" step="0.01" value="0.00"></label>
+          <label class="field"><span>Preço de venda (R$) *</span><input id="productPrice" type="number" min="0" step="0.01" required></label>
+          <label id="initialStockField" class="field"><span>Estoque inicial</span><input id="productInitialStock" type="number" min="0" value="0"></label>
+          <label class="field field--wide"><span>Descrição</span><textarea id="productDescription" rows="3" placeholder="Detalhes do produto"></textarea></label>
+        </div>
+        <div class="modal__actions"><button class="button button--secondary" type="button" data-close-dialog="productDialog">Cancelar</button><button class="button button--primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Salvar produto</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="stockDialog" class="modal modal--small">
+      <form id="stockForm" class="modal__content">
+        <div class="modal__header"><div><p class="eyebrow">Estoque</p><h2>Nova movimentação</h2></div><button class="modal-close" type="button" data-close-dialog="stockDialog"><i class="fa-solid fa-xmark"></i></button></div>
+        <label class="field"><span>Produto *</span><select id="stockProduct" required></select></label>
+        <label class="field"><span>Quantidade *</span><input id="stockQuantity" type="number" required placeholder="Use negativo para saída"></label>
+        <p class="field-help">Exemplo: <strong>10</strong> para entrada ou <strong>-2</strong> para retirada.</p>
+        <label class="field"><span>Motivo *</span><input id="stockReason" required placeholder="Compra, correção de inventário..."></label>
+        <div class="modal__actions"><button class="button button--secondary" type="button" data-close-dialog="stockDialog">Cancelar</button><button class="button button--primary" type="submit"><i class="fa-solid fa-check"></i> Confirmar</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="cancelDialog" class="modal modal--small">
+      <form id="cancelForm" class="modal__content">
+        <div class="modal__header"><div><p class="eyebrow eyebrow--danger">Estorno de venda</p><h2>Cancelar venda <span id="cancelSaleNumber"></span></h2></div><button class="modal-close" type="button" data-close-dialog="cancelDialog"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="cancel-warning"><i class="fa-solid fa-triangle-exclamation"></i><p>Esta ação devolverá todos os itens ao estoque e retirará o valor dos relatórios.</p></div>
+        <input id="cancelSaleId" type="hidden">
+        <label class="field"><span>Motivo do cancelamento *</span><textarea id="cancelReason" rows="4" required placeholder="Ex.: Venda lançada com quantidade incorreta"></textarea></label>
+        <div class="modal__actions"><button class="button button--secondary" type="button" data-close-dialog="cancelDialog">Voltar</button><button class="button button--danger" type="submit"><i class="fa-solid fa-rotate-left"></i> Confirmar estorno</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="openCashDialog" class="modal modal--small">
+      <form id="openCashForm" class="modal__content">
+        <div class="modal__header"><div><p class="eyebrow">Início do dia</p><h2>Abrir novo caixa</h2></div><button class="modal-close" type="button" data-close-dialog="openCashDialog"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="cash-dialog-icon cash-dialog-icon--open"><i class="fa-solid fa-lock-open"></i></div>
+        <p class="dialog-description">Uma nova sessão será iniciada e o painel financeiro começará zerado.</p>
+        <label class="field"><span>Valor inicial em dinheiro</span><div class="money-input"><span>R$</span><input id="openingAmount" type="number" min="0" step="0.01" value="0.00"></div></label>
+        <div class="modal__actions"><button class="button button--secondary" type="button" data-close-dialog="openCashDialog">Cancelar</button><button class="button button--primary" type="submit"><i class="fa-solid fa-play"></i> Abrir caixa</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="closeCashDialog" class="modal modal--small">
+      <form id="closeCashForm" class="modal__content">
+        <div class="modal__header"><div><p class="eyebrow eyebrow--danger">Fim do período</p><h2>Fechar caixa <span id="closingCashNumber"></span></h2></div><button class="modal-close" type="button" data-close-dialog="closeCashDialog"><i class="fa-solid fa-xmark"></i></button></div>
+        <div id="staleCashWarning" class="cancel-warning" hidden><i class="fa-solid fa-triangle-exclamation"></i><p>Este caixa foi aberto em um dia anterior e ainda não foi encerrado.</p></div>
+        <p class="dialog-description">O sistema consolidará as vendas, gerará o PDF de fechamento e zerará o painel do caixa atual.</p>
+        <label class="field"><span>Observações do fechamento</span><textarea id="closingNotes" rows="3" placeholder="Opcional"></textarea></label>
+        <label class="end-day-check"><input id="logoutAfterClose" type="checkbox"><span><strong>Encerrar meu dia</strong><small>Fazer logout após gerar o relatório</small></span></label>
+        <div class="modal__actions"><button class="button button--secondary" type="button" data-close-dialog="closeCashDialog">Voltar</button><button class="button button--danger" type="submit"><i class="fa-solid fa-file-pdf"></i> Fechar e gerar PDF</button></div>
+      </form>
+    </dialog>
+
+    <script src="/js/app.js" defer></script>
+  </body>
+</html>
