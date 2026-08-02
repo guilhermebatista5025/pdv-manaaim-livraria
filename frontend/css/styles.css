@@ -59,6 +59,8 @@ img, svg { max-width: 100%; }
 }
 
 .brand-mark--large { width: 62px; height: 62px; border-radius: 18px; font-size: 1.6rem; }
+.login-brand-icon { display: block; width: 96px; height: 96px; border-radius: 26px; object-fit: cover; box-shadow: 0 18px 42px rgba(3, 12, 32, .3); }
+.login-brand-icon--mobile { width: 64px; height: 64px; border-radius: 18px; box-shadow: 0 12px 28px rgba(3, 12, 32, .2); }
 
 .login-screen {
   min-height: 100vh;
@@ -188,6 +190,7 @@ img, svg { max-width: 100%; }
 }
 
 .sidebar__brand { display: flex; padding: 0 8px 28px; align-items: center; gap: 12px; }
+.sidebar-brand-icon { display: block; width: 42px; height: 42px; flex: 0 0 auto; border-radius: 12px; object-fit: cover; box-shadow: 0 8px 20px rgba(0, 0, 0, .22); }
 .sidebar__brand strong, .mobile-logo strong { display: block; font: 800 1.03rem "Manrope", sans-serif; letter-spacing: .04em; }
 .sidebar__brand div > span, .mobile-logo div > span { display: block; margin-top: 2px; color: var(--gold); font-size: .63rem; font-weight: 700; letter-spacing: .18em; }
 .main-nav { flex: 1; }
@@ -377,7 +380,24 @@ th { color: #8993a5; background: #fafbfc; font-size: .65rem; letter-spacing: .04
 .cash-current-card p { margin: 0 0 5px; color: var(--muted); font-size: .67rem; font-weight: 700; text-transform: uppercase; }
 .cash-current-card h3 { margin: 0 0 5px; font: 800 1.15rem "Manrope", sans-serif; }
 .cash-current-card small { color: var(--muted); font-size: .72rem; }
+.cash-backup-card { display: flex; margin-top: 14px; padding: 20px 22px; align-items: center; gap: 16px; border: 1px solid #bcd2ff; border-radius: var(--radius); background: linear-gradient(135deg, #f1f6ff, #fff); }
+.cash-backup-card--disabled { border-color: var(--line); background: #f8f9fb; }
+.cash-backup-card__icon { display: grid; width: 48px; height: 48px; flex: 0 0 auto; place-items: center; border-radius: 14px; color: var(--primary); background: #dfeaff; font-size: 1.1rem; }
+.cash-backup-card--disabled .cash-backup-card__icon { color: #8b94a5; background: #e9ecf1; }
+.cash-backup-card__content { flex: 1; }
+.cash-backup-card__actions { display: flex; min-width: 205px; flex-direction: column; align-items: stretch; gap: 6px; }
+.backup-folder-name { display: block; max-width: 240px; overflow: hidden; color: var(--muted); font-size: .66rem; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+.cash-backup-card p { margin: 0 0 4px; color: var(--muted); font-size: .65rem; font-weight: 700; text-transform: uppercase; }
+.cash-backup-card h3 { margin: 0 0 4px; font: 800 1rem "Manrope", sans-serif; }
+.cash-backup-card small { color: var(--muted); font-size: .72rem; }
+.backup-warning { display: flex; margin-top: 16px; padding: 16px; gap: 12px; border: 1px solid #f0c36a; border-radius: 12px; color: #79520a; background: #fff8e8; }
+.backup-warning > i { margin-top: 3px; font-size: 1.1rem; }
+.backup-warning strong { display: block; margin-bottom: 4px; }
+.backup-warning p { margin: 0 0 12px; font-size: .78rem; line-height: 1.5; }
 .report-download { display: inline-flex; padding: 6px 9px; align-items: center; gap: 6px; border-radius: 8px; color: #c34c4c; background: #fcecec; font-size: .67rem; font-weight: 700; text-decoration: none; }
+.report-actions { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.report-delete { display: inline-flex; padding: 6px 9px; align-items: center; gap: 6px; border: 0; border-radius: 8px; color: #fff; background: #c34c4c; font: inherit; font-size: .67rem; font-weight: 700; cursor: pointer; }
+.report-delete:hover { background: #a83d3d; }
 .cash-dialog-icon { display: grid; width: 66px; height: 66px; margin: 0 auto 14px; place-items: center; border-radius: 19px; font-size: 1.4rem; }
 .cash-dialog-icon--open { color: var(--success); background: #e4f6ef; }
 .dialog-description { margin: 0 auto 17px; color: var(--muted); font-size: .75rem; line-height: 1.55; text-align: center; }
@@ -549,6 +569,8 @@ th { color: #8993a5; background: #fafbfc; font-size: .65rem; letter-spacing: .04
   .toolbar { align-items: stretch; flex-direction: column; }
   .toolbar input { width: 100%; max-width: none; }
   .cash-current-card { padding: 18px; align-items: flex-start; }
+  .cash-backup-card { align-items: flex-start; flex-wrap: wrap; }
+  .cash-backup-card__actions, .cash-backup-card .button { width: 100%; }
   .cash-current-card__icon { width: 48px; height: 48px; border-radius: 13px; }
   .image-upload-field { align-items: flex-start; }
 }

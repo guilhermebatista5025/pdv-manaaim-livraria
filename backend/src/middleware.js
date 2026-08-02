@@ -31,7 +31,7 @@ function errorHandler(error, req, res, next) {
   if (error.message === 'Formato de imagem inválido.') {
     return res.status(400).json({ error: error.message });
   }
-  if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+  if (error.code === '23505') {
     return res.status(409).json({ error: 'Já existe um registro com esses dados.' });
   }
   res.status(500).json({ error: 'Erro interno do servidor.' });

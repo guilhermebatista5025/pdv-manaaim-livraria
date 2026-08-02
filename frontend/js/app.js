@@ -4,6 +4,7 @@ const state = {
   products: [],
   cancellations: [],
   cashSession: null,
+  backupDirectoryHandle: null,
   cart: new Map()
 };
 
@@ -68,6 +69,88 @@ function showToast(message, type = 'default') {
   toast.textContent = message;
   document.querySelector('#toastContainer').append(toast);
   setTimeout(() => toast.remove(), 3500);
+}
+
+function openBackupSettingsDatabase() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('pdv-manaaim-settings', 1);
+    request.addEventListener('upgradeneeded', () => request.result.createObjectStore('settings'));
+    request.addEventListener('success', () => resolve(request.result));
+    request.addEventListener('error', () => reject(request.error));
+  });
+}
+
+async function storeBackupDirectory(handle) {
+  const database = await openBackupSettingsDatabase();
+  await new Promise((resolve, reject) => {
+    const transaction = database.transaction('settings', 'readwrite');
+    transaction.objectStore('settings').put(handle, 'backup-directory');
+    transaction.addEventListener('complete', resolve);
+    transaction.addEventListener('error', () => reject(transaction.error));
+  });
+  database.close();
+}
+
+async function restoreBackupDirectory() {
+  if (!('showDirectoryPicker' in window)) {
+    document.querySelector('#selectBackupFolderButton').hidden = true;
+    document.querySelector('#backupFolderName').textContent = 'Seu navegador usará a pasta de downloads';
+    return;
+  }
+  try {
+    const database = await openBackupSettingsDatabase();
+    const handle = await new Promise((resolve, reject) => {
+      const request = database.transaction('settings').objectStore('settings').get('backup-directory');
+      request.addEventListener('success', () => resolve(request.result || null));
+      request.addEventListener('error', () => reject(request.error));
+    });
+    database.close();
+    if (handle) {
+      state.backupDirectoryHandle = handle;
+      document.querySelector('#backupFolderName').textContent = `Pasta: ${handle.name}`;
+    }
+  } catch {
+    document.querySelector('#backupFolderName').textContent = 'Escolha uma pasta para os backups';
+  }
+}
+
+async function chooseBackupDirectory() {
+  if (!('showDirectoryPicker' in window)) return showToast('Este navegador não permite escolher uma pasta. O backup será baixado normalmente.', 'error');
+  try {
+    const handle = await window.showDirectoryPicker({ mode: 'readwrite', id: 'pdv-manaaim-backups' });
+    state.backupDirectoryHandle = handle;
+    await storeBackupDirectory(handle);
+    document.querySelector('#backupFolderName').textContent = `Pasta: ${handle.name}`;
+    showToast(`Pasta de backup definida: ${handle.name}`);
+  } catch (error) {
+    if (error.name !== 'AbortError') showToast('Não foi possível acessar a pasta escolhida.', 'error');
+  }
+}
+
+async function saveBackupFile(url, fileName) {
+  const response = await fetch(url, { credentials: 'include' });
+  if (!response.ok) throw new Error('Não foi possível baixar o arquivo de backup.');
+  const blob = await response.blob();
+  const handle = state.backupDirectoryHandle;
+  if (handle && 'showDirectoryPicker' in window) {
+    let permission = await handle.queryPermission({ mode: 'readwrite' });
+    if (permission !== 'granted') permission = await handle.requestPermission({ mode: 'readwrite' });
+    if (permission === 'granted') {
+      const fileHandle = await handle.getFileHandle(fileName, { create: true });
+      const writable = await fileHandle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      return { folder: handle.name };
+    }
+  }
+  const download = document.createElement('a');
+  download.href = URL.createObjectURL(blob);
+  download.download = fileName;
+  document.body.append(download);
+  download.click();
+  download.remove();
+  URL.revokeObjectURL(download.href);
+  return { folder: null };
 }
 
 function showLogin() {
@@ -409,9 +492,16 @@ async function saveStockMovement(event) {
 
 function formatDateTime(value) {
   if (!value) return '—';
+  let normalized = value instanceof Date ? value : String(value).trim();
+  if (!(normalized instanceof Date)) {
+    normalized = normalized.replace(' ', 'T');
+    if (!/(?:Z|[+-]\d{2}:?\d{2})$/i.test(normalized)) normalized += 'Z';
+  }
+  const date = normalized instanceof Date ? normalized : new Date(normalized);
+  if (Number.isNaN(date.getTime())) return '—';
   return new Intl.DateTimeFormat('pt-BR', {
     dateStyle: 'short', timeStyle: 'short'
-  }).format(new Date(`${value.replace(' ', 'T')}Z`));
+  }).format(date);
 }
 
 function setCheckoutReadOnly(readOnly) {
@@ -615,6 +705,24 @@ function updateCashInterface() {
   document.querySelector('#cashCurrentDetails').textContent = isOpen
     ? `Aberto por ${state.cashSession.opened_by_name} em ${formatDateTime(state.cashSession.opened_at)}`
     : 'Abra um novo caixa para começar a vender.';
+  updateBackupInterface();
+}
+
+function updateBackupInterface() {
+  const card = document.querySelector('#cashBackupCard');
+  const button = document.querySelector('#backupCashButton');
+  const title = document.querySelector('#cashBackupTitle');
+  const details = document.querySelector('#cashBackupDetails');
+  const isOpen = Boolean(state.cashSession);
+  const hasBackup = Boolean(state.cashSession?.last_backup_at);
+  card.classList.toggle('cash-backup-card--disabled', !isOpen);
+  button.disabled = !isOpen;
+  title.textContent = !isOpen ? 'Aguardando abertura do caixa' : hasBackup ? 'Backup realizado' : 'Backup pendente';
+  details.textContent = !isOpen
+    ? 'Abra um caixa para liberar o backup.'
+    : hasBackup
+      ? `Último backup: ${formatDateTime(state.cashSession.last_backup_at)}`
+      : 'Faça o download antes de fechar o caixa.';
 }
 
 async function checkCashStatus({ prompt = false } = {}) {
@@ -643,7 +751,35 @@ function openCloseCashDialog(stale = false) {
   document.querySelector('#closeCashForm').reset();
   document.querySelector('#closingCashNumber').textContent = `#${state.cashSession.id}`;
   document.querySelector('#staleCashWarning').hidden = !stale;
+  const missingBackup = !state.cashSession.last_backup_at;
+  document.querySelector('#missingBackupWarning').hidden = !missingBackup;
+  document.querySelector('#closeCashSubmitButton').querySelector('span').textContent = missingBackup
+    ? 'Continuar sem backup'
+    : 'Fechar e gerar PDF';
   document.querySelector('#closeCashDialog').showModal();
+}
+
+async function performCashBackup() {
+  const buttons = [document.querySelector('#backupCashButton'), document.querySelector('#backupBeforeCloseButton')];
+  buttons.forEach((button) => { button.disabled = true; });
+  try {
+    const result = await api('/api/cash/backup', { method: 'POST' });
+    state.cashSession.last_backup_at = result.backup.created_at;
+    updateBackupInterface();
+    document.querySelector('#missingBackupWarning').hidden = true;
+    document.querySelector('#closeCashSubmitButton').querySelector('span').textContent = 'Fechar e gerar PDF';
+    const saved = await saveBackupFile(result.backupUrl, result.backup.file_name);
+    showToast(saved.folder
+      ? `Backup do caixa #${state.cashSession.id} salvo em ${saved.folder}.`
+      : `Backup do caixa #${state.cashSession.id} baixado.`);
+    window.alert(saved.folder
+      ? `Backup realizado com sucesso!\n\nArquivo: ${result.backup.file_name}\nPasta: ${saved.folder}`
+      : `Backup realizado com sucesso!\n\nArquivo: ${result.backup.file_name}\nO navegador enviou o arquivo para a pasta padrão de downloads.`);
+  } catch (error) {
+    showToast(error.message, 'error');
+  } finally {
+    buttons.forEach((button) => { button.disabled = !state.cashSession; });
+  }
 }
 
 async function loadCashHistory() {
@@ -659,9 +795,20 @@ async function loadCashHistory() {
         <td>${session.sales_count}</td>
         <td><strong>${formatMoney(session.revenue_cents)}</strong></td>
         <td><span class="status-pill ${session.status === 'closed' ? 'status-pill--muted' : ''}">${session.status === 'open' ? 'Aberto' : 'Fechado'}</span></td>
-        <td>${session.report_path ? `<a class="report-download" href="/api/cash/${session.id}/report"><i class="fa-solid fa-file-pdf"></i> PDF</a>` : '—'}</td>
+        <td>${session.report_path ? `<span class="report-actions"><a class="report-download" href="/api/cash/${session.id}/report"><i class="fa-solid fa-file-pdf"></i> PDF</a><button class="report-delete" type="button" data-delete-cash-report="${session.id}" title="Apagar PDF"><i class="fa-solid fa-trash"></i> Apagar</button></span>` : '—'}</td>
       </tr>
     `).join('') : '<tr><td colspan="7" class="table-empty">Nenhum caixa registrado.</td></tr>';
+  } catch (error) {
+    showToast(error.message, 'error');
+  }
+}
+
+async function deleteCashReport(sessionId) {
+  if (!window.confirm(`Apagar permanentemente o PDF do caixa #${sessionId}? O histórico financeiro será preservado.`)) return;
+  try {
+    await api(`/api/cash/${sessionId}/report`, { method: 'DELETE' });
+    showToast(`PDF do caixa #${sessionId} apagado.`);
+    await loadCashHistory();
   } catch (error) {
     showToast(error.message, 'error');
   }
@@ -694,7 +841,10 @@ async function closeCash(event) {
   try {
     const result = await api('/api/cash/close', {
       method: 'POST',
-      body: JSON.stringify({ notes: document.querySelector('#closingNotes').value })
+      body: JSON.stringify({
+        notes: document.querySelector('#closingNotes').value,
+        skipBackup: !state.cashSession?.last_backup_at
+      })
     });
     state.cashSession = null;
     state.cart.clear();
@@ -1011,6 +1161,13 @@ document.querySelector('#cashStatusButton').addEventListener('click', () => {
 document.querySelector('#openCashButton').addEventListener('click', () => document.querySelector('#openCashDialog').showModal());
 document.querySelector('#closeCashButton').addEventListener('click', () => openCloseCashDialog(Boolean(state.cashSession?.is_stale)));
 document.querySelector('#refreshCashButton').addEventListener('click', loadCashHistory);
+document.querySelector('#backupCashButton').addEventListener('click', performCashBackup);
+document.querySelector('#backupBeforeCloseButton').addEventListener('click', performCashBackup);
+document.querySelector('#selectBackupFolderButton').addEventListener('click', chooseBackupDirectory);
+document.querySelector('#cashHistoryTable').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-delete-cash-report]');
+  if (button) deleteCashReport(Number(button.dataset.deleteCashReport));
+});
 document.querySelector('#openCashForm').addEventListener('submit', openCash);
 document.querySelector('#closeCashForm').addEventListener('submit', closeCash);
 
@@ -1025,5 +1182,7 @@ document.querySelector('#todayDate').textContent = new Intl.DateTimeFormat('pt-B
 }).format(new Date());
 
 api('/api/auth/me')
-  .then(({ user }) => showApp(user))
+  .then(({ user }) => user ? showApp(user) : showLogin())
   .catch(() => showLogin());
+
+restoreBackupDirectory();

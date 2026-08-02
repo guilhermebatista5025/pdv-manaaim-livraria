@@ -6,20 +6,20 @@
     <meta name="theme-color" content="#17233c">
     <meta name="description" content="Sistema de vendas e estoque da Livraria Manaaim">
     <title>PDV-PRO LIVRARIA</title>
+    <link rel="icon" type="image/png" sizes="64x64" href="./frontend/assets/favicon-64.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./frontend/assets/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" href="./frontend/css/styles.css">
   </head>
   <body>
     <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 
     <main id="loginScreen" class="login-screen">
       <section class="login-brand">
-        <div class="brand-mark brand-mark--large" aria-hidden="true">
-          <i class="fa-solid fa-book-open"></i>
-        </div>
+        <img class="login-brand-icon" src="./frontend/assets/app-icon.png" alt="" aria-hidden="true">
         <div>
           <p class="eyebrow">Livraria Manaaim</p>
           <h1>Venda simples.<br>Gestão inteligente.</h1>
@@ -39,9 +39,7 @@
       <section class="login-panel">
         <div class="login-card">
           <div class="mobile-logo">
-            <div class="brand-mark" aria-hidden="true">
-              <i class="fa-solid fa-book-open"></i>
-            </div>
+            <img class="login-brand-icon login-brand-icon--mobile" src="./frontend/assets/favicon-64.png" alt="" aria-hidden="true">
             <div>
               <strong>PDV-PRO</strong>
               <span>LIVRARIA</span>
@@ -114,9 +112,7 @@
     <div id="appScreen" class="app-shell" hidden>
       <aside id="sidebar" class="sidebar">
         <div class="sidebar__brand">
-          <div class="brand-mark" aria-hidden="true">
-            <i class="fa-solid fa-book-open"></i>
-          </div>
+          <img class="sidebar-brand-icon" src="./frontend/assets/favicon-64.png" alt="" aria-hidden="true">
           <div>
             <strong>PDV-PRO</strong>
             <span>LIVRARIA</span>
@@ -274,6 +270,15 @@
             <div id="cashCurrentCard" class="cash-current-card cash-current-card--closed">
               <span class="cash-current-card__icon"><i class="fa-solid fa-cash-register"></i></span>
               <div><p>Status atual</p><h3 id="cashCurrentTitle">Caixa fechado</h3><small id="cashCurrentDetails">Abra um novo caixa para começar a vender.</small></div>
+            </div>
+            <div id="cashBackupCard" class="cash-backup-card cash-backup-card--disabled">
+              <span class="cash-backup-card__icon"><i class="fa-solid fa-database"></i></span>
+              <div class="cash-backup-card__content"><p>Backup do caixa</p><h3 id="cashBackupTitle">Aguardando abertura do caixa</h3><small id="cashBackupDetails">O backup reúne os dados do PDV em um arquivo JSON para download.</small></div>
+              <div class="cash-backup-card__actions">
+                <button id="selectBackupFolderButton" class="button button--secondary" type="button"><i class="fa-solid fa-folder-open"></i> Escolher pasta</button>
+                <small id="backupFolderName" class="backup-folder-name">Nenhuma pasta escolhida</small>
+                <button id="backupCashButton" class="button button--primary" type="button" disabled><i class="fa-solid fa-cloud-arrow-down"></i> Fazer backup agora</button>
+              </div>
             </div>
             <div class="panel table-panel section-panel">
               <div class="panel__header"><div><h3>Histórico de caixas</h3><p>Relatórios consolidados de cada período</p></div><button id="refreshCashButton" class="text-button"><i class="fa-solid fa-rotate"></i> Atualizar</button></div>
@@ -488,12 +493,13 @@
         <div class="modal__header"><div><p class="eyebrow eyebrow--danger">Fim do período</p><h2>Fechar caixa <span id="closingCashNumber"></span></h2></div><button class="modal-close" type="button" data-close-dialog="closeCashDialog"><i class="fa-solid fa-xmark"></i></button></div>
         <div id="staleCashWarning" class="cancel-warning" hidden><i class="fa-solid fa-triangle-exclamation"></i><p>Este caixa foi aberto em um dia anterior e ainda não foi encerrado.</p></div>
         <p class="dialog-description">O sistema consolidará as vendas, gerará o PDF de fechamento e zerará o painel do caixa atual.</p>
+        <div id="missingBackupWarning" class="backup-warning" hidden><i class="fa-solid fa-database"></i><div><strong>Este caixa ainda não possui backup.</strong><p>Faça o download agora ou continue o fechamento por sua conta e risco.</p><button id="backupBeforeCloseButton" class="button button--secondary" type="button"><i class="fa-solid fa-cloud-arrow-down"></i> Fazer backup antes de fechar</button></div></div>
         <label class="field"><span>Observações do fechamento</span><textarea id="closingNotes" rows="3" placeholder="Opcional"></textarea></label>
         <label class="end-day-check"><input id="logoutAfterClose" type="checkbox"><span><strong>Encerrar meu dia</strong><small>Fazer logout após gerar o relatório</small></span></label>
-        <div class="modal__actions"><button class="button button--secondary" type="button" data-close-dialog="closeCashDialog">Voltar</button><button class="button button--danger" type="submit"><i class="fa-solid fa-file-pdf"></i> Fechar e gerar PDF</button></div>
+        <div class="modal__actions"><button class="button button--secondary" type="button" data-close-dialog="closeCashDialog">Voltar</button><button id="closeCashSubmitButton" class="button button--danger" type="submit"><i class="fa-solid fa-file-pdf"></i> <span>Fechar e gerar PDF</span></button></div>
       </form>
     </dialog>
 
-    <script src="/js/app.js" defer></script>
+    <script src="./frontend/js/app.js" defer></script>
   </body>
 </html>

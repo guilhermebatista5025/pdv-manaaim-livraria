@@ -12,7 +12,8 @@ const config = {
   env: process.env.NODE_ENV || 'development',
   host: process.env.HOST || '0.0.0.0',
   port: positiveInteger(process.env.PORT, 3000),
-  databasePath: path.resolve(rootDir, process.env.DATABASE_PATH || 'backend/database/livraria.db'),
+  databaseUrl: process.env.DATABASE_URL || '',
+  databaseSsl: process.env.DATABASE_SSL !== 'false',
   sessionSecret: process.env.SESSION_SECRET || '',
   sessionMaxAgeHours: positiveInteger(process.env.SESSION_MAX_AGE_HOURS, 12),
   admin: {
@@ -23,6 +24,7 @@ const config = {
 };
 
 function validateConfig() {
+  if (!config.databaseUrl) throw new Error('DATABASE_URL é obrigatória. Use a connection string do Supabase.');
   if (config.sessionSecret.length < 32) {
     throw new Error('SESSION_SECRET deve ter pelo menos 32 caracteres.');
   }
@@ -33,4 +35,3 @@ function validateConfig() {
 }
 
 module.exports = { config, validateConfig };
-

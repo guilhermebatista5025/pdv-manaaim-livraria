@@ -9,11 +9,18 @@ function money(cents) {
 
 function dateTime(value) {
   if (!value) return '-';
+  let normalized = value instanceof Date ? value : String(value).trim();
+  if (!(normalized instanceof Date)) {
+    normalized = normalized.replace(' ', 'T');
+    if (!/(?:Z|[+-]\d{2}:?\d{2})$/i.test(normalized)) normalized += 'Z';
+  }
+  const date = normalized instanceof Date ? normalized : new Date(normalized);
+  if (Number.isNaN(date.getTime())) return '-';
   return new Intl.DateTimeFormat('pt-BR', {
     dateStyle: 'short',
     timeStyle: 'short',
     timeZone: 'America/Sao_Paulo'
-  }).format(new Date(`${value.replace(' ', 'T')}Z`));
+  }).format(date);
 }
 
 function generateCashReport({ session, payments, products }) {

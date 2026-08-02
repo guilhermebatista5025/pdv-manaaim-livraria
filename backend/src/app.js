@@ -2,8 +2,8 @@ const express = require('express');
 const session = require('express-session');
 const helmet = require('helmet');
 const path = require('node:path');
-const BetterSqlite3SessionStore = require('better-sqlite3-session-store')(session);
-const { db } = require('./database');
+const PgSession = require('connect-pg-simple')(session);
+const { pool } = require('./database');
 const { config } = require('./config');
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
@@ -17,10 +17,7 @@ function createApp() {
   const app = express();
   const sessionStore = config.env === 'test'
     ? new session.MemoryStore()
-    : new BetterSqlite3SessionStore({
-        client: db,
-        expired: { clear: true, intervalMs: 15 * 60 * 1000 }
-      });
+    : new PgSession({ pool, tableName: 'user_sessions', createTableIfMissing: true });
 
   app.disable('x-powered-by');
   app.use(helmet());
@@ -56,6 +53,7 @@ function createApp() {
     path.resolve(rootPath, 'node_modules', '@fortawesome', 'fontawesome-free')
   ));
   app.use('/uploads', express.static(path.resolve(rootPath, 'backend', 'uploads')));
+  app.use('/frontend', express.static(frontendPath));
   app.use(express.static(frontendPath));
   app.get('/{*path}', (req, res, next) => {
     if (req.path.startsWith('/api/')) return next();
