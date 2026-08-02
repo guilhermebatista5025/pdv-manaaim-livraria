@@ -117,6 +117,7 @@ img, svg { max-width: 100%; }
 .brand-metric small { margin-top: 3px; color: #8f9bb1; font-size: .75rem; }
 
 .login-panel {
+  position: relative;
   display: flex;
   min-height: 100vh;
   padding: 40px;
@@ -504,12 +505,23 @@ th { color: #8993a5; background: #fafbfc; font-size: .65rem; letter-spacing: .04
 
 /* Celulares e tablets pequenos em retrato. */
 @media (max-width: 700px) {
-  .login-screen { grid-template-columns: 1fr; }
+  .login-screen { min-height: 100svh; grid-template-columns: minmax(0, 1fr); }
   .login-brand { display: none; }
-  .login-panel { min-height: 100dvh; padding: 28px 22px; }
-  .mobile-logo { display: flex; margin-bottom: clamp(30px, 8vh, 45px); align-items: center; gap: 12px; color: var(--navy-900); }
+  .login-panel {
+    width: 100%;
+    min-height: 100svh;
+    padding: max(24px, env(safe-area-inset-top)) 22px max(20px, env(safe-area-inset-bottom));
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  .login-card { width: min(100%, 440px); }
+  .mobile-logo { display: flex; width: min(100%, 440px); margin-bottom: 28px; align-items: center; gap: 12px; color: var(--navy-900); }
   .mobile-logo .brand-mark { background: var(--navy-900); }
-  .copyright { position: static; margin-top: 28px; }
+  .login-card h2 { font-size: clamp(1.65rem, 7vw, 2rem); }
+  .login-card__subtitle { margin: 8px 0 20px; font-size: .9rem; line-height: 1.45; }
+  .auth-back { margin-bottom: 16px; }
+  .copyright { position: static; margin-top: auto; padding-top: 28px; text-align: center; }
   .sidebar { width: min(82vw, 290px); padding-bottom: max(18px, env(safe-area-inset-bottom)); }
   .topbar { height: 74px; padding: 0 16px; gap: 12px; }
   .topbar h1 { max-width: 35vw; overflow: hidden; font-size: 1.12rem; text-overflow: ellipsis; white-space: nowrap; }
@@ -544,6 +556,12 @@ th { color: #8993a5; background: #fafbfc; font-size: .65rem; letter-spacing: .04
 
 /* Celulares. */
 @media (max-width: 540px) {
+  .login-panel { padding-inline: 16px; }
+  .login-brand-icon--mobile { width: 56px; height: 56px; border-radius: 16px; }
+  .mobile-logo { margin-bottom: 22px; }
+  .input-wrap input { height: 50px; padding-right: 44px; padding-left: 44px; }
+  .auth-links { align-items: flex-start; flex-wrap: wrap; row-gap: 12px; }
+  .button--full { min-height: 50px; }
   .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .metric-card { padding: 15px; }
   .metric-card strong { font-size: 1.25rem; }
@@ -577,6 +595,11 @@ th { color: #8993a5; background: #fafbfc; font-size: .65rem; letter-spacing: .04
 
 /* Celulares muito estreitos: prioriza leitura sem cartões espremidos. */
 @media (max-width: 390px) {
+  .login-panel { padding-top: max(18px, env(safe-area-inset-top)); }
+  .mobile-logo { margin-bottom: 18px; }
+  .login-form { gap: 7px; }
+  .login-form label { margin-top: 6px; }
+  .auth-links { flex-direction: column; }
   .metric-grid { grid-template-columns: 1fr; }
   .metric-foot { display: inline; }
   .welcome-row { align-items: flex-start; flex-direction: column; }
@@ -584,6 +607,14 @@ th { color: #8993a5; background: #fafbfc; font-size: .65rem; letter-spacing: .04
   .welcome-row .button span { font-size: inherit; }
   .product-card__image { width: 66px; height: 72px; }
   .modal__actions { margin-top: 18px; }
+}
+
+@media (max-width: 700px) and (max-height: 620px) {
+  .login-panel { padding-top: 16px; }
+  .mobile-logo { margin-bottom: 16px; }
+  .login-brand-icon--mobile { width: 48px; height: 48px; border-radius: 14px; }
+  .login-card__subtitle { margin-bottom: 14px; }
+  .copyright { padding-top: 20px; }
 }
 
 /* Dispositivos de toque recebem alvos confortáveis, inclusive tablets. */
