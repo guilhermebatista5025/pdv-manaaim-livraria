@@ -9,7 +9,7 @@ router.post('/register', async (req,res,next) => { try {
   if(name.length<3||name.length>100) return res.status(400).json({error:'Informe um nome válido.'});
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({error:'Informe um e-mail válido.'});
   if(password.length<8) return res.status(400).json({error:'A senha deve ter pelo menos 8 caracteres.'});
-  const user=await one(`INSERT INTO users(name,email,password_hash,role) VALUES($1,$2,$3,'cashier') RETURNING id,name,email,role`,[name,email,bcrypt.hashSync(password,12)]);
+  const user=await one(`INSERT INTO users(name,email,password_hash,role) VALUES($1,$2,$3,'admin') RETURNING id,name,email,role`,[name,email,bcrypt.hashSync(password,12)]);
   res.status(201).json({user});
 } catch(e){next(e);} });
 
