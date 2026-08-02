@@ -15,11 +15,11 @@ PDV em Node.js e Express, com PostgreSQL hospedado no Supabase.
 O arquivo `vercel.json` direciona `/api/*` para a função Express em `api/index.js`.
 Antes do deploy, configure no projeto da Vercel as variáveis `DATABASE_URL`,
 `DATABASE_SSL=true`, `SESSION_SECRET`, `NODE_ENV=production`, `ADMIN_NAME`,
-`ADMIN_EMAIL` e `ADMIN_PASSWORD`. O `.env` local não é enviado ao GitHub.
+`ADMIN_EMAIL`, `ADMIN_PASSWORD`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` e
+`SUPABASE_PRODUCT_IMAGES_BUCKET=product-images`. O `.env` local não é enviado ao GitHub.
 
-Arquivos gerados durante a execução (uploads, PDFs e backups) usam o diretório
-temporário da função na Vercel. Para persistência desses arquivos entre deploys,
-use um serviço como Supabase Storage.
+As imagens dos produtos são persistidas no Supabase Storage. PDFs e backups gerados
+durante a execução ainda usam o diretório temporário da função na Vercel.
 
 As sessões também são persistidas no PostgreSQL. Vendas, alterações de estoque,
 cancelamentos e fechamento de caixa usam transações para manter os dados consistentes.

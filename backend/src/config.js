@@ -21,6 +21,11 @@ const config = {
   dataDir,
   sessionSecret: process.env.SESSION_SECRET || '',
   sessionMaxAgeHours: positiveInteger(process.env.SESSION_MAX_AGE_HOURS, 12),
+  supabase: {
+    url: String(process.env.SUPABASE_URL || '').replace(/\/$/, ''),
+    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+    productImagesBucket: process.env.SUPABASE_PRODUCT_IMAGES_BUCKET || 'product-images'
+  },
   admin: {
     name: process.env.ADMIN_NAME || 'Administrador',
     email: process.env.ADMIN_EMAIL?.trim().toLowerCase() || '',
