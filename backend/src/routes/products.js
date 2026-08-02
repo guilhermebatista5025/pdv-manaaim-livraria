@@ -1,6 +1,6 @@
 const express=require('express'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),multer=require('multer');
-const {one,many,query,transaction}=require('../database'); const {requireAuth,requireRole}=require('../middleware');
-const router=express.Router(), uploadDirectory=path.resolve(__dirname,'..','..','uploads','products'); fs.mkdirSync(uploadDirectory,{recursive:true});
+const {one,many,query,transaction}=require('../database'); const {config}=require('../config'); const {requireAuth,requireRole}=require('../middleware');
+const router=express.Router(), uploadDirectory=path.resolve(config.dataDir,'uploads','products'); fs.mkdirSync(uploadDirectory,{recursive:true});
 const imageUpload=multer({storage:multer.diskStorage({destination:uploadDirectory,filename:(req,file,cb)=>cb(null,`${crypto.randomUUID()}${({'image/jpeg':'.jpg','image/png':'.png','image/webp':'.webp'})[file.mimetype]||''}`)}),limits:{fileSize:5*1024*1024,files:1},fileFilter:(req,file,cb)=>{const ok=['image/jpeg','image/png','image/webp'].includes(file.mimetype);cb(ok?null:new Error('Formato de imagem inválido.'),ok);}});
 router.use(requireAuth); const opt=v=>String(v??'').trim()||null; const nonneg=(v,f)=>{const n=Number(v);if(!Number.isInteger(n)||n<0)throw Object.assign(new Error(`${f} inválido.`),{status:400});return n;};
 router.get('/',async(req,res,next)=>{try{const search=String(req.query.search||'').trim(),like=`%${search}%`;const products=await many(`SELECT * FROM products WHERE ($1::boolean OR active=TRUE) AND ($2='' OR name ILIKE $3 OR sku ILIKE $3 OR barcode ILIKE $3 OR category ILIKE $3) ORDER BY name`,[req.query.includeInactive==='true',search,like]);res.json({products});}catch(e){next(e);}});

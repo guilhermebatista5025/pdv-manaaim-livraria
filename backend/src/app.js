@@ -52,7 +52,7 @@ function createApp() {
   app.use('/vendor/fontawesome', express.static(
     path.resolve(rootPath, 'node_modules', '@fortawesome', 'fontawesome-free')
   ));
-  app.use('/uploads', express.static(path.resolve(rootPath, 'backend', 'uploads')));
+  app.use('/uploads', express.static(path.resolve(config.dataDir, 'uploads')));
   app.use('/frontend', express.static(frontendPath));
   app.use(express.static(frontendPath));
   app.get('/{*path}', (req, res, next) => {

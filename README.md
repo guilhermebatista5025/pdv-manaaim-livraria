@@ -10,6 +10,17 @@ PDV em Node.js e Express, com PostgreSQL hospedado no Supabase.
 4. Mantenha `DATABASE_SSL=true` e defina `SESSION_SECRET` e `ADMIN_PASSWORD` seguros.
 5. Execute `npm run dev` e acesse `http://localhost:3000`.
 
+## Publicação na Vercel
+
+O arquivo `vercel.json` direciona `/api/*` para a função Express em `api/index.js`.
+Antes do deploy, configure no projeto da Vercel as variáveis `DATABASE_URL`,
+`DATABASE_SSL=true`, `SESSION_SECRET`, `NODE_ENV=production`, `ADMIN_NAME`,
+`ADMIN_EMAIL` e `ADMIN_PASSWORD`. O `.env` local não é enviado ao GitHub.
+
+Arquivos gerados durante a execução (uploads, PDFs e backups) usam o diretório
+temporário da função na Vercel. Para persistência desses arquivos entre deploys,
+use um serviço como Supabase Storage.
+
 As sessões também são persistidas no PostgreSQL. Vendas, alterações de estoque,
 cancelamentos e fechamento de caixa usam transações para manter os dados consistentes.
 

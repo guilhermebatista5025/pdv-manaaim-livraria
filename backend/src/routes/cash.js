@@ -2,12 +2,13 @@ const express = require('express');
 const fs = require('node:fs');
 const path = require('node:path');
 const { one, many, query, transaction } = require('../database');
+const { config } = require('../config');
 const { requireAuth, requireRole } = require('../middleware');
 const { generateCashReport } = require('../cash-report');
 
 const router = express.Router();
-const reportsDirectory = path.resolve(__dirname, '..', '..', 'reports');
-const backupsDirectory = path.resolve(__dirname, '..', '..', 'backups');
+const reportsDirectory = path.resolve(config.dataDir, 'reports');
+const backupsDirectory = path.resolve(config.dataDir, 'backups');
 fs.mkdirSync(reportsDirectory, { recursive: true });
 fs.mkdirSync(backupsDirectory, { recursive: true });
 router.use(requireAuth);

@@ -1,7 +1,11 @@
 const path = require('node:path');
+const os = require('node:os');
 require('dotenv').config();
 
 const rootDir = path.resolve(__dirname, '..', '..');
+const dataDir = process.env.VERCEL
+  ? path.join(os.tmpdir(), 'pdv-manaaim')
+  : path.join(rootDir, 'backend');
 
 function positiveInteger(value, fallback) {
   const parsed = Number.parseInt(value, 10);
@@ -14,6 +18,7 @@ const config = {
   port: positiveInteger(process.env.PORT, 3000),
   databaseUrl: process.env.DATABASE_URL || '',
   databaseSsl: process.env.DATABASE_SSL !== 'false',
+  dataDir,
   sessionSecret: process.env.SESSION_SECRET || '',
   sessionMaxAgeHours: positiveInteger(process.env.SESSION_MAX_AGE_HOURS, 12),
   admin: {
