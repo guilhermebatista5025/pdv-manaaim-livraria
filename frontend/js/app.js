@@ -260,7 +260,7 @@ async function loadProducts(search = '') {
           <td>${formatMoney(product.price_cents)}</td>
           <td>${product.stock_quantity} un.</td>
           <td><span class="status-pill${low ? ' status-pill--danger' : ''}">${low ? 'Estoque baixo' : 'Disponível'}</span></td>
-          <td><button class="table-action" data-edit-product="${product.id}" title="Editar"><i class="fa-solid fa-pen"></i></button></td>
+          <td><button class="table-action" data-edit-product="${product.id}" title="Editar"><i class="fa-solid fa-pen"></i></button><button class="table-action table-action--danger" data-delete-product="${product.id}" title="Apagar produto"><i class="fa-solid fa-trash"></i></button></td>
         </tr>
       `;
     }).join('');
@@ -309,6 +309,20 @@ async function loadPosProducts(search = '') {
       </button>
     `).join('');
     state.products = data.products;
+  } catch (error) {
+    showToast(error.message, 'error');
+  }
+}
+
+async function deleteProduct(productId) {
+  const product = state.products.find((item) => item.id === productId);
+  if (!product || !confirm(`Apagar "${product.name}" do estoque?\n\nO produto deixará de aparecer no catálogo e nas vendas, mas o histórico já registrado será preservado.`)) return;
+  try {
+    await api(`/api/products/${productId}`, { method: 'DELETE' });
+    state.cart.delete(productId);
+    renderCart();
+    await loadProducts(document.querySelector('#productSearch').value);
+    showToast('Produto apagado do estoque.');
   } catch (error) {
     showToast(error.message, 'error');
   }
@@ -1134,8 +1148,10 @@ document.querySelector('#productImage').addEventListener('change', (event) => {
   reader.readAsDataURL(file);
 });
 document.querySelector('#productsTable').addEventListener('click', (event) => {
-  const button = event.target.closest('[data-edit-product]');
-  if (button) openProductDialog(state.products.find((product) => product.id === Number(button.dataset.editProduct)));
+  const editButton = event.target.closest('[data-edit-product]');
+  if (editButton) openProductDialog(state.products.find((product) => product.id === Number(editButton.dataset.editProduct)));
+  const deleteButton = event.target.closest('[data-delete-product]');
+  if (deleteButton) deleteProduct(Number(deleteButton.dataset.deleteProduct));
 });
 
 document.querySelector('#newStockButton').addEventListener('click', async () => {
