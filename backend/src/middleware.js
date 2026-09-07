@@ -34,6 +34,9 @@ function errorHandler(error, req, res, next) {
   if (error.code === '23505') {
     return res.status(409).json({ error: 'Já existe um registro com esses dados.' });
   }
+  if (Number.isInteger(error.status) && error.status >= 400 && error.status < 600) {
+    return res.status(error.status).json({ error: error.message });
+  }
   res.status(500).json({ error: 'Erro interno do servidor.' });
 }
 

@@ -3,6 +3,9 @@ node_modules/
 backend/database/*.db
 backend/database/*.db-shm
 backend/database/*.db-wal
+backend/test/*.db
+backend/test/*.db-shm
+backend/test/*.db-wal
 backend/backups/
 backend/uploads/
 backend/reports/

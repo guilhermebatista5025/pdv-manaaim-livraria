@@ -68,41 +68,7 @@
               <span aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
             </button>
             </form>
-            <div class="auth-links"><button type="button" data-auth-view="forgot">Esqueceu a senha?</button><button type="button" data-auth-view="register">Criar uma conta</button></div>
-          </div>
-
-          <div id="registerView" class="auth-view" hidden>
-            <button class="auth-back" type="button" data-auth-view="login"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
-            <p class="eyebrow">Novo acesso</p>
-            <h2>Crie sua conta</h2>
-            <p class="login-card__subtitle">Crie seu acesso administrativo ao sistema.</p>
-            <form id="registerForm" class="login-form">
-              <label for="registerName">Nome completo</label>
-              <div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-user"></i></span><input id="registerName" type="text" autocomplete="name" minlength="3" maxlength="100" placeholder="Seu nome completo" required></div>
-              <label for="registerEmail">E-mail</label>
-              <div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-envelope"></i></span><input id="registerEmail" type="email" autocomplete="email" placeholder="seu@email.com" required></div>
-              <label for="registerPassword">Senha</label>
-              <div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-lock"></i></span><input id="registerPassword" type="password" autocomplete="new-password" minlength="8" placeholder="Mínimo de 8 caracteres" required></div>
-              <label for="registerPasswordConfirm">Confirme a senha</label>
-              <div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-shield-halved"></i></span><input id="registerPasswordConfirm" type="password" autocomplete="new-password" minlength="8" placeholder="Digite a senha novamente" required></div>
-              <button class="button button--primary button--full" type="submit"><span>Criar conta</span><i class="fa-solid fa-user-plus"></i></button>
-            </form>
-          </div>
-
-          <div id="forgotView" class="auth-view" hidden>
-            <button class="auth-back" type="button" data-auth-view="login"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
-            <p class="eyebrow">Recuperação de acesso</p>
-            <h2>Redefina sua senha</h2>
-            <p class="login-card__subtitle">Informe o e-mail cadastrado e escolha uma nova senha.</p>
-            <form id="forgotForm" class="login-form">
-              <label for="forgotEmail">E-mail cadastrado</label>
-              <div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-envelope"></i></span><input id="forgotEmail" type="email" autocomplete="email" placeholder="seu@email.com" required></div>
-              <label for="forgotPassword">Nova senha</label>
-              <div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-lock"></i></span><input id="forgotPassword" type="password" autocomplete="new-password" minlength="8" placeholder="Mínimo de 8 caracteres" required></div>
-              <label for="forgotPasswordConfirm">Confirme a nova senha</label>
-              <div class="input-wrap"><span class="input-icon"><i class="fa-solid fa-shield-halved"></i></span><input id="forgotPasswordConfirm" type="password" autocomplete="new-password" minlength="8" placeholder="Digite a senha novamente" required></div>
-              <button class="button button--primary button--full" type="submit"><span>Atualizar senha</span><i class="fa-solid fa-key"></i></button>
-            </form>
+            <p class="login-card__subtitle login-card__access-help">Contas e redefinições de senha são realizadas pelo administrador do sistema.</p>
           </div>
         </div>
         <p class="copyright">© 2026 PDV-PRO LIVRARIA</p>
@@ -231,6 +197,12 @@
                       <i class="fa-solid fa-magnifying-glass"></i>
                       <input id="posSearch" type="search" placeholder="Buscar título, categoria, SKU ou código..." autocomplete="off">
                     </div>
+                    <form id="posBarcodeForm" class="pos-barcode-form">
+                      <label class="sr-only" for="posBarcodeScan">Código de barras</label>
+                      <i class="fa-solid fa-barcode" aria-hidden="true"></i>
+                      <input id="posBarcodeScan" inputmode="numeric" placeholder="Bipe ou digite o código" autocomplete="off">
+                      <button class="button button--secondary" type="submit">Adicionar</button>
+                    </form>
                     <select id="posCategoryFilter" aria-label="Filtrar por categoria"><option value="">Todas as categorias</option></select>
                     <select id="posStockFilter" aria-label="Filtrar por estoque"><option value="available">Com estoque</option><option value="all">Todos</option><option value="low">Estoque baixo</option><option value="out">Esgotados</option></select>
                   </div>

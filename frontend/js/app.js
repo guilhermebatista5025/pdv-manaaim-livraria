@@ -387,6 +387,22 @@ function changeCart(productId, delta) {
   renderCart();
 }
 
+async function addProductByBarcode(rawCode) {
+  const code = String(rawCode || '').trim();
+  if (!code) return showToast('Digite ou leia um código de barras.', 'error');
+  if (!state.cashSession) return showToast('Abra o caixa antes de iniciar uma venda.', 'error');
+
+  try {
+    const { product } = await api(`/api/products/lookup?code=${encodeURIComponent(code)}`);
+    // Use the current database value, including its latest stock quantity.
+    state.products = [product, ...state.products.filter((item) => item.id !== product.id)];
+    changeCart(product.id, 1);
+    showToast(`${product.name} adicionado ao carrinho.`);
+  } catch (error) {
+    showToast(error.message, 'error');
+  }
+}
+
 function openProductDialog(product = null) {
   document.querySelector('#productForm').reset();
   document.querySelector('#productId').value = product?.id || '';
@@ -899,7 +915,10 @@ function navigate(view) {
 
   if (view === 'dashboard') loadDashboard();
   if (view === 'products') loadProducts();
-  if (view === 'pos') loadPosProducts();
+  if (view === 'pos') {
+    loadPosProducts();
+    requestAnimationFrame(() => document.querySelector('#posBarcodeScan').focus());
+  }
   if (view === 'cash') loadCashHistory();
   if (view === 'stock') loadStock();
   if (view === 'sales') loadSales();
@@ -927,65 +946,6 @@ elements.loginForm.addEventListener('submit', async (event) => {
   } finally {
     elements.loginButton.disabled = false;
     elements.loginButton.querySelector('span').textContent = 'Entrar no sistema';
-  }
-});
-
-document.querySelectorAll('[data-auth-view]').forEach((button) => {
-  button.addEventListener('click', () => showAuthView(button.dataset.authView));
-});
-
-document.querySelector('#registerForm').addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const form = event.currentTarget;
-  const password = document.querySelector('#registerPassword').value;
-  const confirmation = document.querySelector('#registerPasswordConfirm').value;
-  if (password !== confirmation) return showToast('As senhas não coincidem.', 'error');
-
-  const submitButton = form.querySelector('[type="submit"]');
-  submitButton.disabled = true;
-  try {
-    const { user } = await api('/api/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({
-        name: document.querySelector('#registerName').value,
-        email: document.querySelector('#registerEmail').value,
-        password
-      })
-    });
-    form.reset();
-    showAuthView('login');
-    elements.loginForm.email.value = user.email;
-    showToast('Conta criada. Agora você já pode entrar.');
-  } catch (error) {
-    showToast(error.message, 'error');
-  } finally {
-    submitButton.disabled = false;
-  }
-});
-
-document.querySelector('#forgotForm').addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const form = event.currentTarget;
-  const password = document.querySelector('#forgotPassword').value;
-  const confirmation = document.querySelector('#forgotPasswordConfirm').value;
-  if (password !== confirmation) return showToast('As senhas não coincidem.', 'error');
-
-  const submitButton = form.querySelector('[type="submit"]');
-  submitButton.disabled = true;
-  try {
-    const email = document.querySelector('#forgotEmail').value.trim();
-    const { message } = await api('/api/auth/reset-password', {
-      method: 'POST',
-      body: JSON.stringify({ email, password })
-    });
-    form.reset();
-    showAuthView('login');
-    elements.loginForm.email.value = email;
-    showToast(message);
-  } catch (error) {
-    showToast(error.message, 'error');
-  } finally {
-    submitButton.disabled = false;
   }
 });
 
@@ -1028,6 +988,59 @@ document.querySelector('#posSearch').addEventListener('input', (event) => {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(() => loadPosProducts(event.target.value), 220);
 });
+document.querySelector('#posBarcodeForm').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const input = document.querySelector('#posBarcodeScan');
+  const code = input.value;
+  input.value = '';
+  await addProductByBarcode(code);
+  input.focus();
+});
+
+// Most USB/Bluetooth readers type a code very quickly and finish with Enter.
+// This keeps scans working in the POS even if the barcode field briefly loses focus.
+const barcodeScanner = { value: '', lastKeyAt: 0 };
+document.addEventListener('keydown', (event) => {
+  if (
+    state.currentView !== 'pos'
+    || document.querySelector('dialog[open]')
+    || event.ctrlKey
+    || event.altKey
+    || event.metaKey
+    || event.isComposing
+  ) {
+    barcodeScanner.value = '';
+    return;
+  }
+
+  const now = Date.now();
+  if (event.key === 'Enter') {
+    const code = barcodeScanner.value;
+    const isScannerInput = code.length >= 3 && now - barcodeScanner.lastKeyAt <= 120;
+    barcodeScanner.value = '';
+    if (!isScannerInput) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    const activeElement = document.activeElement;
+    if (activeElement?.id === 'posBarcodeScan') activeElement.value = '';
+    if (activeElement?.id === 'posSearch') {
+      activeElement.value = '';
+      loadPosProducts();
+    }
+    addProductByBarcode(code);
+    requestAnimationFrame(() => document.querySelector('#posBarcodeScan').focus());
+    return;
+  }
+
+  if (event.key.length !== 1) {
+    barcodeScanner.value = '';
+    return;
+  }
+  if (now - barcodeScanner.lastKeyAt > 120) barcodeScanner.value = '';
+  barcodeScanner.value += event.key;
+  barcodeScanner.lastKeyAt = now;
+}, true);
 document.querySelector('#posCategoryFilter').addEventListener('change', () => loadPosProducts(document.querySelector('#posSearch').value));
 document.querySelector('#posStockFilter').addEventListener('change', () => loadPosProducts(document.querySelector('#posSearch').value));
 
