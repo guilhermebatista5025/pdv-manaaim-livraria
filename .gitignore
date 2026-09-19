@@ -10,3 +10,4 @@ backend/backups/
 backend/uploads/
 backend/reports/
 npm-debug.log*
+supabase-schema.sql
