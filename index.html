@@ -198,9 +198,10 @@
                       <input id="posSearch" type="search" placeholder="Buscar título, categoria, SKU ou código..." autocomplete="off">
                     </div>
                     <form id="posBarcodeForm" class="pos-barcode-form">
-                      <label class="sr-only" for="posBarcodeScan">Código de barras</label>
-                      <i class="fa-solid fa-barcode" aria-hidden="true"></i>
-                      <input id="posBarcodeScan" inputmode="numeric" placeholder="Bipe ou digite o código" autocomplete="off">
+                      <div class="pos-barcode-field">
+                        <i class="fa-solid fa-barcode" aria-hidden="true"></i>
+                        <input id="posBarcodeScan" inputmode="numeric" placeholder="Bipe ou digite o código de Barras" autocomplete="off">
+                      </div>
                       <button class="button button--secondary" type="submit">Adicionar</button>
                     </form>
                     <select id="posCategoryFilter" aria-label="Filtrar por categoria"><option value="">Todas as categorias</option></select>
