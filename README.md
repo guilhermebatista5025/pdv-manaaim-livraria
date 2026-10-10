@@ -51,6 +51,6 @@ adicionados.
 - `GET|POST /api/products`, `GET /api/products/lookup?code=...`, `GET|PATCH /api/products/:id`
 - `POST /api/products/:id/stock`, `POST /api/products/:id/image`
 - `GET|POST /api/sales`, `GET /api/sales/:id`, `POST /api/sales/:id/cancel`
-- `GET /api/reports/summary`, `GET /api/stock/summary`, `GET /api/stock/movements`
+- `GET /api/reports/summary`, `GET /api/stock/summary`, `GET /api/stock/movements`, `POST /api/stock/receipts` (administrador/proprietário; entrada por barcode/SKU com custo médio e markup)
 - `GET /api/cash/status`, `GET /api/cash/history`, `POST /api/cash/open`
 - `POST /api/cash/close`, `GET /api/cash/:id/report`

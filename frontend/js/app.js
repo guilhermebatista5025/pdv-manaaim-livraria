@@ -2,6 +2,8 @@ const state = {
   user: null,
   currentView: 'dashboard',
   products: [],
+  receiptProduct: null,
+  receiptLookupCode: '',
   cancellations: [],
   cashSession: null,
   backupDirectoryHandle: null,
@@ -185,6 +187,7 @@ function showApp(user) {
     item.hidden = !['admin', 'owner'].includes(user.role);
   });
   document.querySelector('#newProductButton').hidden = !['admin', 'owner'].includes(user.role);
+  document.querySelector('#newReceiptButton').hidden = !['admin', 'owner'].includes(user.role);
   document.querySelector('#newStockButton').hidden = !['admin', 'owner'].includes(user.role);
   navigate('pos');
   checkCashStatus({ prompt: true });
@@ -403,6 +406,65 @@ async function addProductByBarcode(rawCode) {
   }
 }
 
+function updateSkuBarcodePreview() {
+  const sku = document.querySelector('#productSku').value.trim();
+  const productBarcode = document.querySelector('#productBarcode').value.trim();
+  const code = productBarcode || sku;
+  const codeSource = productBarcode ? 'código da embalagem' : 'SKU';
+  const barcode = document.querySelector('#skuBarcodePreview');
+  const hint = document.querySelector('#skuBarcodeHint');
+  const printButton = document.querySelector('#printSkuBarcodeButton');
+  barcode.replaceChildren();
+  printButton.disabled = true;
+
+  if (!code) {
+    hint.textContent = 'Informe um código de barras ou SKU para gerar a etiqueta.';
+    return;
+  }
+
+  if (typeof window.JsBarcode !== 'function') {
+    hint.textContent = 'O gerador de etiquetas não carregou. Atualize a página e tente novamente.';
+    return;
+  }
+
+  try {
+    window.JsBarcode(barcode, code, {
+      format: 'CODE128',
+      lineColor: '#17233c',
+      width: 2,
+      height: 54,
+      displayValue: true,
+      font: 'monospace',
+      fontSize: 14,
+      margin: 10
+    });
+    hint.textContent = `Etiqueta pronta com o ${codeSource} ${code}. O PDV aceita esse código e também o SKU do produto.`;
+    printButton.disabled = false;
+  } catch {
+    hint.textContent = 'Este SKU contém caracteres que não podem ser usados no código Code 128.';
+  }
+}
+
+function printSkuBarcodeLabel() {
+  const sku = document.querySelector('#productSku').value.trim();
+  const productBarcode = document.querySelector('#productBarcode').value.trim();
+  const code = productBarcode || sku;
+  const productName = document.querySelector('#productName').value.trim() || 'Produto';
+  const barcode = document.querySelector('#skuBarcodePreview');
+  if (!code || !barcode.querySelector('path')) return;
+
+  const printWindow = window.open('', '_blank', 'popup,width=520,height=360');
+  if (!printWindow) return showToast('Permita a abertura da janela para imprimir a etiqueta.', 'error');
+
+  const barcodeMarkup = new XMLSerializer().serializeToString(barcode);
+  printWindow.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Etiqueta ${escapeHtml(code)}</title><style>body{margin:0;padding:18px;font-family:Arial,sans-serif;color:#17233c}.label{width:320px;padding:14px;border:1px solid #d5dbe5;text-align:center}.name{margin:0 0 8px;font-size:14px;font-weight:700}.code{width:100%;height:auto}.sku{margin:6px 0 0;font-family:monospace;font-size:13px}@media print{body{padding:0}.label{border:0}}</style></head><body><main class="label"><p class="name">${escapeHtml(productName)}</p>${barcodeMarkup}<p class="sku">${escapeHtml(code)}</p></main></body></html>`);
+  printWindow.document.close();
+  printWindow.addEventListener('load', () => {
+    printWindow.focus();
+    printWindow.print();
+  }, { once: true });
+}
+
 function openProductDialog(product = null) {
   document.querySelector('#productForm').reset();
   document.querySelector('#productId').value = product?.id || '';
@@ -414,6 +476,7 @@ function openProductDialog(product = null) {
   document.querySelector('#productCategory').value = product?.category || '';
   document.querySelector('#productMinimumStock').value = product?.minimum_stock ?? 0;
   document.querySelector('#productCost').value = ((product?.cost_cents || 0) / 100).toFixed(2);
+  document.querySelector('#productMarkup').value = Number(product?.markup_percent || 0).toFixed(2);
   document.querySelector('#productPrice').value = product ? (product.price_cents / 100).toFixed(2) : '';
   document.querySelector('#productInitialStock').value = 0;
   document.querySelector('#productDescription').value = product?.description || '';
@@ -422,7 +485,33 @@ function openProductDialog(product = null) {
   preview.innerHTML = product?.image_path
     ? `<img src="${escapeHtml(product.image_path)}" alt="Imagem atual do produto">`
     : '<i class="fa-solid fa-image"></i>';
+  updateProductPriceSuggestion();
+  updateSkuBarcodePreview();
   document.querySelector('#productDialog').showModal();
+}
+
+function getSuggestedProductPriceCents() {
+  const costCents = Math.max(0, Math.round(Number(document.querySelector('#productCost').value || 0) * 100));
+  const markupPercent = Number(document.querySelector('#productMarkup').value || 0);
+  if (!Number.isSafeInteger(costCents) || costCents > 2_147_483_647
+    || !Number.isFinite(markupPercent) || markupPercent < 0 || markupPercent > 1000) return null;
+  const markupBasisPoints = BigInt(Math.round(markupPercent * 100));
+  return Number((BigInt(costCents) * (10000n + markupBasisPoints) + 5000n) / 10000n);
+}
+
+function updateProductPriceSuggestion() {
+  const suggestedCents = getSuggestedProductPriceCents();
+  const output = document.querySelector('#productSuggestedPrice');
+  const applyButton = document.querySelector('#applyMarkupPriceButton');
+  output.textContent = suggestedCents === null ? 'Markup inválido' : formatMoney(suggestedCents);
+  applyButton.disabled = suggestedCents === null;
+  output.dataset.priceCents = suggestedCents ?? '';
+}
+
+function applyProductPriceSuggestion() {
+  const suggestedCents = getSuggestedProductPriceCents();
+  if (suggestedCents === null) return;
+  document.querySelector('#productPrice').value = (suggestedCents / 100).toFixed(2);
 }
 
 async function saveProduct(event) {
@@ -436,6 +525,7 @@ async function saveProduct(event) {
     description: document.querySelector('#productDescription').value,
     minimumStock: Number(document.querySelector('#productMinimumStock').value),
     costCents: Math.round(Number(document.querySelector('#productCost').value) * 100),
+    markupPercent: Number(document.querySelector('#productMarkup').value || 0),
     priceCents: Math.round(Number(document.querySelector('#productPrice').value) * 100)
   };
   if (!id) payload.initialStock = Number(document.querySelector('#productInitialStock').value);
@@ -483,7 +573,7 @@ async function loadStock() {
         <td><strong>${escapeHtml(movement.product_name)}</strong><br><small>${escapeHtml(movement.sku || '')}</small></td>
         <td>${typeLabels[movement.type] || movement.type}</td>
         <td><strong style="color:${movement.quantity > 0 ? 'var(--success)' : 'var(--danger)'}">${movement.quantity > 0 ? '+' : ''}${movement.quantity}</strong></td>
-        <td>${escapeHtml(movement.reason || '—')}</td>
+        <td>${escapeHtml(movement.reason || '—')}${movement.unit_cost_cents ? `<br><small>Compra un.: ${formatMoney(movement.unit_cost_cents)} · custo médio: ${formatMoney(movement.average_cost_after_cents)}</small>` : ''}</td>
         <td>${escapeHtml(movement.user_name || 'Sistema')}</td>
       </tr>
     `).join('') : '<tr><td colspan="6" class="table-empty">Nenhuma movimentação registrada.</td></tr>';
@@ -517,6 +607,132 @@ async function saveStockMovement(event) {
     await loadStock();
   } catch (error) {
     showToast(error.message, 'error');
+  }
+}
+
+function updateStockReceiptPreview() {
+  const averageOutput = document.querySelector('#receiptNewAverage');
+  const priceOutput = document.querySelector('#receiptSuggestedPrice');
+  const confirmButton = document.querySelector('#confirmReceiptButton');
+  const product = state.receiptProduct;
+  const quantity = Number(document.querySelector('#receiptQuantity').value);
+  const unitCostCents = Math.round(Number(document.querySelector('#receiptUnitCost').value || 0) * 100);
+  const markupPercent = Number(document.querySelector('#receiptMarkup').value || 0);
+  confirmButton.disabled = true;
+  averageOutput.textContent = '—';
+  priceOutput.textContent = '—';
+  if (!product || !Number.isSafeInteger(quantity) || quantity < 1 || !Number.isSafeInteger(unitCostCents) || unitCostCents < 1 || unitCostCents > 2_147_483_647
+    || !Number.isFinite(markupPercent) || markupPercent < 0 || markupPercent > 1000) return;
+
+  const currentQuantity = Number(product.stock_quantity);
+  const currentCostCents = Number(product.cost_cents);
+  const totalQuantity = currentQuantity + quantity;
+  if (!Number.isSafeInteger(totalQuantity) || totalQuantity < 1 || totalQuantity > 2_147_483_647) return;
+  const totalCostCents = BigInt(currentQuantity) * BigInt(currentCostCents) + BigInt(quantity) * BigInt(unitCostCents);
+  const averageCostCents = Number((totalCostCents + BigInt(totalQuantity) / 2n) / BigInt(totalQuantity));
+  const markupBasisPoints = BigInt(Math.round(markupPercent * 100));
+  const suggestedPriceCents = Number((BigInt(averageCostCents) * (10000n + markupBasisPoints) + 5000n) / 10000n);
+  if (averageCostCents > 2_147_483_647 || suggestedPriceCents > 2_147_483_647) return;
+
+  averageOutput.textContent = formatMoney(averageCostCents);
+  priceOutput.textContent = formatMoney(suggestedPriceCents);
+  confirmButton.disabled = false;
+}
+
+async function lookupReceiptProduct() {
+  const codeInput = document.querySelector('#receiptCode');
+  const code = codeInput.value.trim();
+  const hint = document.querySelector('#receiptLookupHint');
+  const summary = document.querySelector('#receiptProductSummary');
+  const lookupButton = document.querySelector('#lookupReceiptProductButton');
+  state.receiptProduct = null;
+  state.receiptLookupCode = '';
+  summary.hidden = true;
+  updateStockReceiptPreview();
+  if (!code) {
+    hint.textContent = 'Escaneie ou informe o código de barras/SKU do produto.';
+    return;
+  }
+
+  lookupButton.disabled = true;
+  hint.textContent = 'Buscando produto no cadastro...';
+  try {
+    const { product } = await api(`/api/products/lookup?code=${encodeURIComponent(code)}`);
+    if (codeInput.value.trim() !== code) return;
+    state.receiptProduct = product;
+    state.receiptLookupCode = code;
+    document.querySelector('#receiptProductName').textContent = product.name;
+    document.querySelector('#receiptProductCode').textContent = `SKU: ${product.sku || '—'} · Código: ${product.barcode || '—'}`;
+    document.querySelector('#receiptProductCategory').textContent = product.category || 'Sem categoria';
+    document.querySelector('#receiptCurrentStock').textContent = `${product.stock_quantity} un.`;
+    document.querySelector('#receiptCurrentAverage').textContent = formatMoney(product.cost_cents);
+    document.querySelector('#receiptCurrentPrice').textContent = formatMoney(product.price_cents);
+    document.querySelector('#receiptMarkup').value = Number(product.markup_percent || 0).toFixed(2);
+    summary.hidden = false;
+    hint.textContent = 'Produto localizado. Informe a quantidade e o custo unitário da compra.';
+    updateStockReceiptPreview();
+  } catch (error) {
+    hint.textContent = error.message;
+  } finally {
+    lookupButton.disabled = false;
+  }
+}
+
+function openReceiptDialog() {
+  document.querySelector('#receiptForm').reset();
+  state.receiptProduct = null;
+  state.receiptLookupCode = '';
+  document.querySelector('#receiptProductSummary').hidden = true;
+  document.querySelector('#receiptLookupHint').textContent = 'O leitor envia Enter no final e faz a busca automaticamente.';
+  document.querySelector('#receiptNewAverage').textContent = '—';
+  document.querySelector('#receiptSuggestedPrice').textContent = '—';
+  document.querySelector('#confirmReceiptButton').disabled = true;
+  const dialog = document.querySelector('#receiptDialog');
+  dialog.showModal();
+  document.querySelector('#receiptCode').focus();
+}
+
+async function saveStockReceipt(event) {
+  event.preventDefault();
+  const code = document.querySelector('#receiptCode').value.trim();
+  if (!state.receiptProduct || state.receiptLookupCode !== code) {
+    document.querySelector('#receiptLookupHint').textContent = 'Faça a busca do código novamente antes de confirmar a entrada.';
+    return;
+  }
+
+  const confirmButton = document.querySelector('#confirmReceiptButton');
+  confirmButton.disabled = true;
+  try {
+    const applySalePrice = document.querySelector('#receiptApplySalePrice').checked;
+    const result = await api('/api/stock/receipts', {
+      method: 'POST',
+      body: JSON.stringify({
+        code,
+        quantity: Number(document.querySelector('#receiptQuantity').value),
+        unitCostCents: Math.round(Number(document.querySelector('#receiptUnitCost').value) * 100),
+        markupPercent: Number(document.querySelector('#receiptMarkup').value),
+        applySalePrice,
+        supplier: document.querySelector('#receiptSupplier').value,
+        invoiceNumber: document.querySelector('#receiptInvoiceNumber').value
+      })
+    });
+    document.querySelector('#receiptDialog').close();
+    document.querySelector('#receiptForm').reset();
+    state.receiptProduct = null;
+    state.receiptLookupCode = '';
+    const priceMessage = applySalePrice
+      ? ` Preço sugerido aplicado: ${formatMoney(result.suggestedPriceCents)}.`
+      : ` Preço de venda mantido: ${formatMoney(result.product.price_cents)}.`;
+    showToast(`Entrada registrada. Novo custo médio: ${formatMoney(result.product.cost_cents)}.${priceMessage}`);
+    await Promise.all([
+      loadStock(),
+      loadProducts(elements.productSearch.value),
+      loadPosProducts(document.querySelector('#posSearch').value)
+    ]);
+  } catch (error) {
+    showToast(error.message, 'error');
+  } finally {
+    confirmButton.disabled = !state.receiptProduct;
   }
 }
 
@@ -692,22 +908,72 @@ async function submitCancellation(event) {
 async function loadReports() {
   try {
     const period = document.querySelector('#reportPeriod').value;
-    const data = await api(`/api/reports/summary?period=${period}`);
+    const year = document.querySelector('#reportYear').value || new Date().getFullYear();
+    document.querySelector('#reportYearField').hidden = period !== 'year';
+    const data = await api(`/api/reports/summary?period=${period}&year=${year}`);
     document.querySelector('#reportRevenue').textContent = formatMoney(data.summary.revenue_cents);
     document.querySelector('#reportSales').textContent = data.summary.sales_count;
     document.querySelector('#reportItems').textContent = data.summary.items_sold;
     document.querySelector('#reportProfit').textContent = formatMoney(data.summary.gross_profit_cents);
+    // Older API deployments may not yet include the comparison object.
+    // Keep the report usable while frontend/backend versions are rolling out.
+    const previousRevenue = Number(data.previous?.revenue_cents ?? 0);
+    const currentRevenue = Number(data.summary.revenue_cents || 0);
+    const difference = previousRevenue > 0 ? ((currentRevenue - previousRevenue) / previousRevenue) * 100 : null;
+    const comparison = document.querySelector('#reportComparison');
+    comparison.textContent = difference === null ? (currentRevenue ? 'Sem base anterior' : 'Sem faturamento nos períodos') : `${difference >= 0 ? '+' : ''}${difference.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
+    comparison.classList.toggle('report-comparison__value--positive', difference > 0);
+    comparison.classList.toggle('report-comparison__value--negative', difference < 0);
+    const periodLabels = { today: 'hoje vs. ontem', week: 'últimos 7 dias vs. os 7 anteriores', month: 'este mês vs. o mês anterior', year: `${data.year} vs. ${data.year - 1}` };
+    document.querySelector('#reportComparisonDetail').textContent = `${periodLabels[period]} · ${formatMoney(currentRevenue)} contra ${formatMoney(previousRevenue)} em faturamento.`;
+    document.querySelector('#reportTrendCaption').textContent = period === 'year'
+      ? `Faturamento mensal em ${data.year}`
+      : period === 'month' ? 'Faturamento por dia neste mês' : period === 'week' ? 'Faturamento diário nos últimos 7 dias' : 'Faturamento por hora hoje';
+    renderReportTrend(Array.isArray(data.trend) ? data.trend : []);
+    renderReportPayments(Array.isArray(data.paymentMix) ? data.paymentMix : [], currentRevenue);
     const top = document.querySelector('#reportTopProducts');
-    top.innerHTML = data.topProducts.length ? data.topProducts.map((product, index) => `
+    const topProducts = Array.isArray(data.topProducts) ? data.topProducts : [];
+    top.innerHTML = topProducts.length ? topProducts.map((product, index) => `
       <div class="rank-row"><span class="rank-number">${index + 1}</span><div class="rank-info"><strong>${escapeHtml(product.product_name)}</strong><small>${product.quantity} unidades</small></div><span class="rank-total">${formatMoney(product.revenue_cents)}</span></div>
     `).join('') : '<div class="empty-state"><span><i class="fa-solid fa-chart-simple"></i></span><p>Sem vendas neste período.</p></div>';
     const low = document.querySelector('#reportLowStock');
-    low.innerHTML = data.lowStock.length ? data.lowStock.map((product) => `
+    const lowStock = Array.isArray(data.lowStock) ? data.lowStock : [];
+    low.innerHTML = lowStock.length ? lowStock.map((product) => `
       <div class="stock-row"><span class="rank-number">!</span><div class="stock-info"><strong>${escapeHtml(product.name)}</strong><small>Mínimo: ${product.minimum_stock}</small></div><span class="stock-level">${product.stock_quantity} un.</span></div>
     `).join('') : '<div class="empty-state empty-state--success"><span><i class="fa-solid fa-check"></i></span><p>Estoque em dia.</p></div>';
   } catch (error) {
     showToast(error.message, 'error');
   }
+}
+
+function renderReportTrend(points) {
+  const root = document.querySelector('#reportTrend');
+  if (!points.length) {
+    root.innerHTML = '<div class="empty-state"><span><i class="fa-solid fa-chart-column"></i></span><p>Ainda não há vendas registradas neste ano.</p></div>';
+    return;
+  }
+  const values = points.map((point) => Number(point.revenue_cents || 0));
+  const max = Math.max(...values, 1);
+  root.innerHTML = points.map((point, index) => {
+    const value = Number(point.revenue_cents || 0);
+    const height = Math.max(value ? 5 : 2, Math.round((value / max) * 100));
+    return `<div class="report-trend__item" title="${escapeHtml(point.label)}: ${formatMoney(value)} · ${point.sales_count} venda(s)"><div class="report-trend__track"><span style="height:${height}%"></span></div><small>${escapeHtml(point.label)}</small>${points.length <= 12 ? `<b>${formatMoney(value)}</b>` : ''}</div>`;
+  }).join('');
+}
+
+function renderReportPayments(payments, totalRevenue) {
+  const labels = { cash: 'Dinheiro', pix: 'Pix', credit_card: 'Cartão de crédito', debit_card: 'Cartão de débito' };
+  const colors = ['#247b5b', '#3775d6', '#8b61c7', '#e1a333'];
+  const root = document.querySelector('#reportPayments');
+  if (!payments.length || !totalRevenue) {
+    root.innerHTML = '<div class="empty-state"><span><i class="fa-solid fa-chart-pie"></i></span><p>Sem pagamentos neste período.</p></div>';
+    return;
+  }
+  const segments = payments.map((payment, index) => {
+    const percent = Number(payment.revenue_cents) / totalRevenue * 100;
+    return `${colors[index % colors.length]} ${payments.slice(0, index).reduce((sum, previous) => sum + Number(previous.revenue_cents) / totalRevenue * 100, 0)}% ${payments.slice(0, index + 1).reduce((sum, previous) => sum + Number(previous.revenue_cents) / totalRevenue * 100, 0)}%`;
+  });
+  root.innerHTML = `<div class="report-donut" style="background:conic-gradient(${segments.join(',')})"><div><strong>${formatMoney(totalRevenue)}</strong><small>total</small></div></div><div class="report-payment-legend">${payments.map((payment, index) => `<div><span style="--payment-color:${colors[index % colors.length]}"></span><p>${escapeHtml(labels[payment.payment_method] || payment.payment_method)}<small>${payment.sales_count} venda(s)</small></p><strong>${formatMoney(payment.revenue_cents)}<small>${(Number(payment.revenue_cents) / totalRevenue * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%</small></strong></div>`).join('')}</div>`;
 }
 
 function updateCashInterface() {
@@ -1033,12 +1299,13 @@ document.addEventListener('keydown', (event) => {
     return;
   }
 
-  if (event.key.length !== 1) {
+  const key = typeof event.key === 'string' ? event.key : '';
+  if (key.length !== 1) {
     barcodeScanner.value = '';
     return;
   }
   if (now - barcodeScanner.lastKeyAt > 120) barcodeScanner.value = '';
-  barcodeScanner.value += event.key;
+  barcodeScanner.value += key;
   barcodeScanner.lastKeyAt = now;
 }, true);
 document.querySelector('#posCategoryFilter').addEventListener('change', () => loadPosProducts(document.querySelector('#posSearch').value));
@@ -1142,6 +1409,16 @@ document.querySelector('#salesTable').addEventListener('click', (event) => {
 
 document.querySelector('#newProductButton').addEventListener('click', () => openProductDialog());
 document.querySelector('#productForm').addEventListener('submit', saveProduct);
+document.querySelector('#productCost').addEventListener('input', updateProductPriceSuggestion);
+document.querySelector('#productMarkup').addEventListener('input', updateProductPriceSuggestion);
+document.querySelector('#applyMarkupPriceButton').addEventListener('click', applyProductPriceSuggestion);
+document.querySelector('#productSku').addEventListener('input', updateSkuBarcodePreview);
+document.querySelector('#productBarcode').addEventListener('input', updateSkuBarcodePreview);
+document.querySelector('#productBarcode').addEventListener('keydown', (event) => {
+  // Scanners often send Enter after the code; keep that from submitting the whole product form.
+  if (event.key === 'Enter') event.preventDefault();
+});
+document.querySelector('#printSkuBarcodeButton').addEventListener('click', printSkuBarcodeLabel);
 document.querySelector('#productImage').addEventListener('change', (event) => {
   const file = event.target.files[0];
   const preview = document.querySelector('#productImagePreview');
@@ -1172,6 +1449,26 @@ document.querySelector('#newStockButton').addEventListener('click', async () => 
   document.querySelector('#stockDialog').showModal();
 });
 document.querySelector('#stockForm').addEventListener('submit', saveStockMovement);
+document.querySelector('#newReceiptButton').addEventListener('click', openReceiptDialog);
+document.querySelector('#receiptCode').addEventListener('input', () => {
+  state.receiptProduct = null;
+  state.receiptLookupCode = '';
+  document.querySelector('#receiptApplySalePrice').checked = false;
+  document.querySelector('#receiptProductSummary').hidden = true;
+  document.querySelector('#receiptLookupHint').textContent = 'Faça a busca do código para carregar o produto.';
+  updateStockReceiptPreview();
+});
+document.querySelector('#receiptCode').addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    lookupReceiptProduct();
+  }
+});
+document.querySelector('#lookupReceiptProductButton').addEventListener('click', lookupReceiptProduct);
+document.querySelector('#receiptQuantity').addEventListener('input', updateStockReceiptPreview);
+document.querySelector('#receiptUnitCost').addEventListener('input', updateStockReceiptPreview);
+document.querySelector('#receiptMarkup').addEventListener('input', updateStockReceiptPreview);
+document.querySelector('#receiptForm').addEventListener('submit', saveStockReceipt);
 
 document.querySelector('#refreshSalesButton').addEventListener('click', loadSales);
 document.querySelector('#refreshCancellationsButton').addEventListener('click', loadCancellations);
@@ -1182,7 +1479,13 @@ document.querySelector('#cancellationsTable').addEventListener('click', (event) 
 });
 document.querySelector('#cancelForm').addEventListener('submit', submitCancellation);
 
+const reportYearSelect = document.querySelector('#reportYear');
+const currentReportYear = new Date().getFullYear();
+reportYearSelect.innerHTML = Array.from({ length: Math.max(1, currentReportYear - 2019) }, (_, index) => currentReportYear - index)
+  .map((year) => `<option value="${year}">${year}</option>`).join('');
+reportYearSelect.value = String(currentReportYear);
 document.querySelector('#reportPeriod').addEventListener('change', loadReports);
+reportYearSelect.addEventListener('change', loadReports);
 document.querySelector('#printReportButton').addEventListener('click', () => window.print());
 document.querySelector('#cashStatusButton').addEventListener('click', () => {
   if (['admin', 'owner'].includes(state.user.role)) navigate('cash');
